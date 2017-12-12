@@ -70,6 +70,7 @@ stream
     try {
       await spreadsheet(data, argv)
     } catch (error) {
-      console.error('Something wrong happened', error.stack)
+      console.error('Oups: Something wrong happened "%s"', error.message)
+      process.exit(1)
     }
   })
