@@ -26,7 +26,7 @@
     "csv"
   ],
   "author": "Jean Ponchon <jean.ponchon@novadiscovery.com>",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "bluebird": "^3.5.1",
     "chalk": "^2.3.0",
@@ -39,15 +39,24 @@
     "yargs": "^10.0.3"
   },
   "devDependencies": {
-    "chai": "^4.1.2",
-    "chai-as-promised": "^7.1.1",
     "docsify-cli": "^4.1.12",
-    "mocha": "^4.0.1",
-    "nyc": "^11.3.0",
     "standard": "^10.0.3",
     "standard-version": "^4.2.0"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
+  },
+  "standard": {
+    "ignore": [
+      "/docs/"
+    ]
+  },
+  "bugs": {
+    "url": "https://github.com/nodys/spreadstream/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nodys/spreadstream.git"
   }
+
 }

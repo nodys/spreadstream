@@ -1,9 +1,11 @@
 # spreadstream
+[![Build Status](https://travis-ci.org/nodys/spreadstream.svg?branch=master)](https://travis-ci.org/nodys/spreadstream) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com) [![Clussh on npm](https://img.shields.io/npm/v/spreadstream.svg)](https://www.npmjs.com/package/spreadstream)
 
-Stream data to google spreadsheet document with a cli for csv stream.
+
+
+Pipe your csv to google spreadsheet
 
 # Cli
-
 
 ## Installation
 Install spreadstream globally:
@@ -174,6 +176,9 @@ Your credential account file (or the spreadstream rc file) should look like this
   }
 }
 ```
-
-
 (credit: https://github.com/theoephraim/node-google-spreadsheet/blob/master/README.md#service-account-recommended-method)
+
+
+---
+
+License: [MIT](./LICENSE) - Novadiscovery
