@@ -1,0 +1,32 @@
+{
+  "name": "spreadstream",
+  "version": "1.0.0",
+  "description": "Pipe your csv to google spreadsheet",
+  "main": "./lib/index.js",
+  "bin": {
+    "spreadstream": "./bin/spreadstream.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "spreadsheet",
+    "google",
+    "stream",
+    "pipe",
+    "csv"
+  ],
+  "author": "Jean Ponchon <jean.ponchon@novadiscovery.com>",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "google-auth-library": "^0.11.0",
+    "googleapis": "^22.2.0",
+    "path": "^0.12.7",
+    "rc": "^1.2.2",
+    "yargs": "^10.0.3"
+  },
+  "devDependencies": {
+    "standard": "^10.0.3"
+  }
+}

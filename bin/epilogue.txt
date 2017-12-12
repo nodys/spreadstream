@@ -1,0 +1,12 @@
+This tool require a Google Service Account with write permission.
+You must create an service account add share the spreadsheet with the
+account email (see below for details).
+
+Then, you can either:
+
+- Use the --credential targeting an user account config file
+- Add a rc file for ${APPNAME} (eg. ~/.config/${APPNAME}/config) with a
+  credential key (see https://www.npmjs.com/package/rc for valid rc
+  file path).
+
+More information on (TODO)
