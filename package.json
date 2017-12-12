@@ -1,13 +1,22 @@
 {
   "name": "spreadstream",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Pipe your csv to google spreadsheet",
-  "main": "./lib/index.js",
+  "main": "./lib/spreadstream.js",
   "bin": {
     "spreadstream": "./bin/spreadstream.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run lint && mocha",
+    "test:watch": "mocha -w",
+    "coverage": "nyc mocha",
+    "coverage:html": "npm run coverage && nyc report --reporter=html",
+    "lint": "standard",
+    "docs": "cp README.md ./docs/README.md",
+    "release": "npm test && npm run docs && standard-version",
+    "release:major": "npm run release -- --release-as major",
+    "release:minor": "npm run release -- --release-as minor",
+    "release:patch": "npm run release -- --release-as patch"
   },
   "keywords": [
     "spreadsheet",
@@ -20,6 +29,7 @@
   "license": "ISC",
   "dependencies": {
     "bluebird": "^3.5.1",
+    "chalk": "^2.3.0",
     "csv-parser": "^1.12.0",
     "google-auth-library": "^0.11.0",
     "googleapis": "^22.2.0",
@@ -29,6 +39,15 @@
     "yargs": "^10.0.3"
   },
   "devDependencies": {
-    "standard": "^10.0.3"
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "docsify-cli": "^4.1.12",
+    "mocha": "^4.0.1",
+    "nyc": "^11.3.0",
+    "standard": "^10.0.3",
+    "standard-version": "^4.2.0"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
   }
 }

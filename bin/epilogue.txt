@@ -8,5 +8,3 @@ Then, you can either:
 - Add a rc file for ${APPNAME} (eg. ~/.config/${APPNAME}/config) with a
   credential key (see https://www.npmjs.com/package/rc for valid rc
   file path).
-
-More information on (TODO)

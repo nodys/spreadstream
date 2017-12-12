@@ -4,8 +4,7 @@ const yargs = require('yargs')
 const path = require('path')
 const rc = require('rc')
 const fs = require('fs')
-const spreadsheet = require('../lib/spreadstream')
-const miss = require('mississippi')
+const spreadstream = require('../lib/spreadstream')
 const csv = require('csv-parser')
 
 const APPNAME = path.basename(__filename, path.extname(__filename))
@@ -18,7 +17,7 @@ const argv = yargs
     type: 'string',
     coerce: function (credential) {
       try {
-        return JSON.parse(fs.readFileSync(credential, 'utf-8'))
+        return JSON.parse(fs.readFileSync(credential, 'utf-8')).creadential
       } catch (ignore) { return credential }
     }
   })
@@ -36,7 +35,43 @@ const argv = yargs
   })
   .option('replace', {
     type: 'boolean',
-    description: 'Append data instead of replace data in the sheet'
+    description: 'Replace data in the sheet (clear all values in the sheet)'
+  })
+  .option('verbose', {
+    type: 'boolean',
+    default: false,
+    description: 'Print some informations'
+  })
+  .option('value-input-option', {
+    type: 'string',
+    default: 'USER_ENTERED',
+    choices: ['USER_ENTERED', 'RAW'],
+    description: 'Type of insertion (see sheet api)'
+  })
+  .option('max-buffer', {
+    type: 'number',
+    default: 5000,
+    description: 'Buffer max size before flushing to spreadsheet (default: 10000)'
+  })
+  .option('csv-separator', {
+    type: 'string',
+    description: 'Csv parser: optional separator'
+  })
+  .option('csv-quote', {
+    type: 'string',
+    description: 'Csv parser: optional quote character'
+  })
+  .option('csv-escape', {
+    type: 'string',
+    description: 'Csv parser: optional quote escape (default to quote character)'
+  })
+  .option('csv-newline', {
+    type: 'string',
+    description: 'Csv parser: optional new line'
+  })
+  .option('csv-headers', {
+    type: 'array',
+    description: 'Csv parser: specify headers'
   })
   .epilogue(fs.readFileSync(path.resolve(__dirname, './epilogue.txt'), 'utf-8'))
   .parse()
@@ -56,21 +91,27 @@ if (argv._.length) {
   process.exit(1)
 }
 
+// Read csv options:
+const csvOptions = {
+  separator: argv['csv-separator'],
+  quote: argv['csv-quote'],
+  escape: argv['csv-escape'],
+  newline: argv['csv-newline'],
+  headers: argv['csv-headers']
+}
+
+// Handle errors
+function handleError (error) {
+  console.error('Error:', error.message)
+  process.exit(1)
+}
+
 // Collect data
-let data = []
-stream
-  .pipe(csv())
-  .pipe(miss.through.obj((row, _, done) => {
-    // Add headers
-    if (!data.length) { data.push(Object.keys(row)) }
-    data.push(Object.values(row))
-    done()
-  }))
-  .on('finish', async () => {
-    try {
-      await spreadsheet(data, argv)
-    } catch (error) {
-      console.error('Oups: Something wrong happened "%s"', error.message)
-      process.exit(1)
-    }
-  })
+try {
+  stream
+  .pipe(csv(csvOptions))
+  .pipe(spreadstream(argv))
+  .on('error', handleError)
+} catch (error) {
+  handleError(error)
+}
