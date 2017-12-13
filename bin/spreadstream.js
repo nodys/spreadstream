@@ -44,8 +44,8 @@ const argv = yargs
   })
   .option('value-input-option', {
     type: 'string',
-    default: 'USER_ENTERED',
-    choices: ['USER_ENTERED', 'RAW'],
+    default: spreadstream.inputOptions.USER_ENTERED,
+    choices: Object.values(spreadstream.inputOptions),
     description: 'Type of insertion (see sheet api)'
   })
   .option('max-buffer', {
