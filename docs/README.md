@@ -26,7 +26,7 @@ Create a `spreadstream` [rc](https://www.npmjs.com/package/rc) file with your go
   // You can default value for any spreadstream command line options...
   "id": "spreadsheet id",
   "sheet": "My Sheet",
-  // .. etc.
+  // ... etc.
 }
 ```
 
