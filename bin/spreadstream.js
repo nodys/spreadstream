@@ -6,6 +6,8 @@ const rc = require('rc')
 const fs = require('fs')
 const spreadstream = require('../lib/spreadstream')
 const csv = require('csv-parser')
+const ndjson = require('ndjson')
+const miss = require('mississippi')
 
 const APPNAME = path.basename(__filename, path.extname(__filename))
 const config = rc(APPNAME, {})
@@ -73,21 +75,20 @@ const argv = yargs
     type: 'array',
     description: 'Csv parser: specify headers'
   })
+  .option('json', {
+    type: 'boolean',
+    default: false,
+    description: 'Input / output format should use json'
+  })
+  .option('read', {
+    type: 'boolean',
+    description: 'Read sheet instead of writing'
+  })
   .epilogue(fs.readFileSync(path.resolve(__dirname, './epilogue.txt'), 'utf-8'))
   .parse()
 
 if (!argv.credential || (argv.credential.type !== 'service_account')) {
   console.error('Missing google service account credential. Provide by option or rc file. See --help for more informations.')
-  process.exit(1)
-}
-
-// Select stream
-let stream = process.stdin
-
-if (argv._.length) {
-  stream = fs.createReadStream(argv._[0])
-} else if (process.isTTY) {
-  console.error('Missing input (csv file path or standard input)')
   process.exit(1)
 }
 
@@ -106,12 +107,50 @@ function handleError (error) {
   process.exit(1)
 }
 
-// Collect data
-try {
-  stream
-  .pipe(csv(csvOptions))
-  .pipe(spreadstream(argv))
-  .on('error', handleError)
-} catch (error) {
-  handleError(error)
+if (argv.read) {
+  // output data
+  spreadstream.readDocument(argv)
+    .then((values) => {
+      console.log(values)
+      if (!values.length) { return }
+
+      const firstRow = values.shift()
+      const headers = argv.headers || firstRow
+
+      const rows = values.map(row => {
+        return firstRow.reduce((memo, value, index) => {
+          if (headers.includes(value)) {
+            memo[value] = row[index]
+          }
+          return memo
+        }, {})
+      })
+
+      const serializer = argv.json ? ndjson.serialize() : csv(csvOptions)
+      miss.from.obj(rows)
+        .pipe(serializer)
+        .pipe(process.stdout)
+    })
+    .catch(handleError)
+} else {
+  // Select stream
+  let stream = process.stdin
+
+  if (argv._.length) {
+    stream = fs.createReadStream(argv._[0])
+  } else if (process.isTTY) {
+    console.error('Missing input (csv file path or standard input)')
+    process.exit(1)
+  }
+
+  // Collect data
+  try {
+    let parser = argv.json ? ndjson.parse() : csv(csvOptions)
+    stream
+      .pipe(parser)
+      .pipe(spreadstream(argv))
+      .on('error', handleError)
+  } catch (error) {
+    handleError(error)
+  }
 }
