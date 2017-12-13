@@ -32,6 +32,8 @@ Create a `spreadstream` [rc](https://www.npmjs.com/package/rc) file with your go
 
 ## Usage
 
+### Write data to google spreadsheet
+
 ```sh
 # Pipe csv to spreadstream (append new rows to the sheet)
 cat mydocument.csv | spreadstream
@@ -44,9 +46,25 @@ cat mydocument.csv | spreadsheet --sheet "My Sheet"
 
 # Clear sheet first (replace)
 cat mydocument.csv | spreadsheet --replace
+
+# Pipe line delimited json instead of csv
+cat mydocument.ndjson | spreadsheet --json
 ```
 
-## Options
+### Read data from google spreadsheet
+
+```sh
+# Read sheet
+spreadsheet --read
+
+# Change csv output (same options than for input):
+spreadsheet --read --csv-separator ";"
+
+# output as line delimited json instead of csv
+spreadsheet --read --json
+```
+
+### Options
 
 See `spreadstream --help`:
 
@@ -73,6 +91,9 @@ Options:
                         character)                                      [string]
   --csv-newline         Csv parser: optional new line                   [string]
   --csv-headers         Csv parser: specify headers                      [array]
+  --json                Input / output format should use json
+                                                      [boolean] [default: false]
+  --read                Read sheet instead of writing                  [boolean]
 
 This tool require a Google Service Account with write permission.
 You must create an service account add share the spreadsheet with the
@@ -150,8 +171,9 @@ stream.write({ foo: 4, bar: 2 })
 stream.write({ foo: 7, bar: 10 })
 stream.end()
 
-// The stream
 
+// Read a document
+spreadstream.readDocument(config).then(values => console.log(values))
 
 ```
 
