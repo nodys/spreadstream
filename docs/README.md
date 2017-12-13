@@ -122,17 +122,37 @@ const config = {
   maxBuffer: 5000,
 
   // Verbose mode (default: false)
-  verbose: false
+  verbose: false,
+
+  // Force (and restrict) headers
+  //headers: ['foo', 'bar']
 }
 
 // Create a stream
 const stream = spreadstream(config)
 
-// Pipe an object stream or write directly to the stream
+// Pipe an object stream or write directly to the stream.
+// The spreadstream stream supports to kind of object stream: Array or Object.
+// Note that you can not push a mixed stream of array and object.
+
+// Stream of Array:
+// Each array is a row in the sheet. The first row must contain
+// the headers (either when the config `headers` option is provided)
 stream.write(['foo', 'bar'])
 stream.write(['4', '2'])
 stream.write(['7', '10'])
 stream.end()
+
+
+// Stream of Object
+// The first row must not contain the headers (the object keys will be used)
+stream.write({ foo: 4, bar: 2 })
+stream.write({ foo: 7, bar: 10 })
+stream.end()
+
+// The stream
+
+
 ```
 
 # Create a service account
