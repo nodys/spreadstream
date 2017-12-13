@@ -5,7 +5,8 @@ const path = require('path')
 const rc = require('rc')
 const fs = require('fs')
 const spreadstream = require('../lib/spreadstream')
-const csv = require('csv-parser')
+const csvParser = require('csv-parser')
+const csvWriter = require('csv-write-stream')
 const ndjson = require('ndjson')
 const miss = require('mississippi')
 
@@ -111,7 +112,6 @@ if (argv.read) {
   // output data
   spreadstream.readDocument(argv)
     .then((values) => {
-      console.log(values)
       if (!values.length) { return }
 
       const firstRow = values.shift()
@@ -126,7 +126,7 @@ if (argv.read) {
         }, {})
       })
 
-      const serializer = argv.json ? ndjson.serialize() : csv(csvOptions)
+      const serializer = argv.json ? ndjson.serialize() : csvWriter(csvOptions)
       miss.from.obj(rows)
         .pipe(serializer)
         .pipe(process.stdout)
@@ -145,7 +145,7 @@ if (argv.read) {
 
   // Collect data
   try {
-    let parser = argv.json ? ndjson.parse() : csv(csvOptions)
+    let parser = argv.json ? ndjson.parse() : csvParser(csvOptions)
     stream
       .pipe(parser)
       .pipe(spreadstream(argv))
