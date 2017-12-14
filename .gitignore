@@ -1,2 +1,4 @@
 node_modules
 /sandbox
+.nyc_output
+coverage
