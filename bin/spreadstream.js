@@ -9,25 +9,22 @@ const csvParser = require('csv-parser')
 const csvWriter = require('csv-write-stream')
 const ndjson = require('ndjson')
 const miss = require('mississippi')
+const { fromCallback } = require('bluebird')
+
+const enums = spreadstream.enums
 
 const APPNAME = path.basename(__filename, path.extname(__filename))
 const config = rc(APPNAME, {})
 const argv = yargs
-  .usage(`${APPNAME} [options] [input csv file]`)
+  .usage(`${APPNAME} [options]`)
   .config(config)
-  .option('credential', {
-    description: 'Google service account credential config file',
-    type: 'string',
-    coerce: function (credential) {
-      try {
-        return JSON.parse(fs.readFileSync(credential, 'utf-8')).creadential
-      } catch (ignore) { return credential }
-    }
+  .config('settings', function (configPath) {
+    return JSON.parse(fs.readFileSync(configPath, 'utf-8'))
   })
   .option('id', {
     type: 'string',
     required: true,
-    alias: 'i',
+    alias: ['spreadsheet-id'],
     description: 'Identifier of the spreadsheet document'
   })
   .option('sheet', {
@@ -47,9 +44,24 @@ const argv = yargs
   })
   .option('value-input-option', {
     type: 'string',
-    default: spreadstream.inputOptions.USER_ENTERED,
-    choices: Object.values(spreadstream.inputOptions),
-    description: 'Type of insertion (see sheet api)'
+    choices: Object.values(enums.valueInput),
+    description: 'Determines how input data should be interpreted'
+  })
+  .option('major-dimension', {
+    type: 'string',
+    choices: Object.values(enums.majorDimension),
+    description: 'Indicates which dimension read operation should apply to'
+  })
+  .option('value-render', {
+    type: 'string',
+    choices: Object.values(enums.valueRender),
+    description: 'Determines how values should be rendered in the the output'
+  })
+  .option('date-time-render', {
+    type: 'string',
+    default: enums.dateTimeRender.SERIAL_NUMBER,
+    choices: Object.values(enums.dateTimeRender),
+    description: 'Determines how dates should be rendered in the the output'
   })
   .option('max-buffer', {
     type: 'number',
@@ -81,11 +93,16 @@ const argv = yargs
     default: false,
     description: 'Input / output format should use json'
   })
-  .option('read', {
-    type: 'boolean',
-    description: 'Read sheet instead of writing'
+  .option('input', {
+    type: 'string',
+    description: 'Input file to stream to sheet instead of stdin. `-` force reading from stdin (imply writing mode)'
   })
-  .epilogue(fs.readFileSync(path.resolve(__dirname, './epilogue.txt'), 'utf-8'))
+  .option('output', {
+    type: 'string',
+    description: 'Output file to stream sheet data to. `-` force writing to stdout (imply reading mode)'
+  })
+  .completion('completion')
+  // .epilogue(fs.readFileSync(path.resolve(__dirname, './epilogue.txt'), 'utf-8'))
   .parse()
 
 if (!argv.credential || (argv.credential.type !== 'service_account')) {
@@ -102,55 +119,78 @@ const csvOptions = {
   headers: argv['csv-headers']
 }
 
+// Reading or writing ?
+if (argv.output) {
+  argv.mode = enums.mode.READING
+} else if (argv.input) {
+  argv.mode = enums.mode.WRITING
+} else {
+  // Writing sheet from stdin if process is not a TTY
+  argv.mode = process.stdin.isTTY
+    ? enums.mode.READING
+    : enums.mode.WRITING
+}
+
 // Handle errors
 function handleError (error) {
   console.error('Error:', error.message)
   process.exit(1)
 }
 
-if (argv.read) {
-  // output data
-  spreadstream.readDocument(argv)
-    .then((values) => {
-      if (!values.length) { return }
+/**
+ * Execute a the read command
+ * @param  {Object} config
+ * @return {Promise}
+ */
+async function doRead (config) {
+  const outputStream = config.output && config.output !== '-'
+    ? fs.createWriteStream(config.output)
+    : process.stdout
 
-      const firstRow = values.shift()
-      const headers = argv.headers || firstRow
+  // Read sheet values
+  const values = await spreadstream.readDocument(argv)
 
-      const rows = values.map(row => {
-        return firstRow.reduce((memo, value, index) => {
-          if (headers.includes(value)) {
-            memo[value] = row[index]
-          }
-          return memo
-        }, {})
-      })
+  // Empty or the sheet does not exists
+  if (!values.length) { return }
 
-      const serializer = argv.json ? ndjson.serialize() : csvWriter(csvOptions)
-      miss.from.obj(rows)
-        .pipe(serializer)
-        .pipe(process.stdout)
-    })
-    .catch(handleError)
+  const firstRow = values.shift()
+  const headers = argv.headers || firstRow
+
+  const rows = values.map(row => {
+    return firstRow.reduce((memo, value, index) => {
+      if (headers.includes(value)) {
+        memo[value] = row[index]
+      }
+      return memo
+    }, {})
+  })
+
+  const serializer = argv.json ? ndjson.serialize() : csvWriter(csvOptions)
+
+  miss.from.obj(rows)
+    .pipe(serializer)
+    .pipe(outputStream)
+}
+
+/**
+ * Execute a the write command
+ * @param  {Object} config
+ * @return {Promise}
+ */
+async function doWrite (config) {
+  const inputStream = config.input && config.input !== '-'
+    ? fs.createReadStream(config.input)
+    : process.stdin
+
+  const parser = argv.json ? ndjson.parse() : csvParser(csvOptions)
+  const outputStream = spreadstream(argv)
+  const dreaner = miss.to.obj((o, enc, cb) => cb())
+
+  return fromCallback(cb => miss.pipe(inputStream, parser, outputStream, dreaner, cb))
+}
+
+if (argv.mode === enums.mode.READING) {
+  doRead(argv).catch(handleError)
 } else {
-  // Select stream
-  let stream = process.stdin
-
-  if (argv._.length) {
-    stream = fs.createReadStream(argv._[0])
-  } else if (process.isTTY) {
-    console.error('Missing input (csv file path or standard input)')
-    process.exit(1)
-  }
-
-  // Collect data
-  try {
-    let parser = argv.json ? ndjson.parse() : csvParser(csvOptions)
-    stream
-      .pipe(parser)
-      .pipe(spreadstream(argv))
-      .on('error', handleError)
-  } catch (error) {
-    handleError(error)
-  }
+  doWrite(argv).catch(handleError)
 }
