@@ -184,9 +184,8 @@ async function doWrite (config) {
 
   const parser = argv.json ? ndjson.parse() : csvParser(csvOptions)
   const outputStream = spreadstream(argv)
-  const dreaner = miss.to.obj((o, enc, cb) => cb())
 
-  return fromCallback(cb => miss.pipe(inputStream, parser, outputStream, dreaner, cb))
+  return fromCallback(cb => miss.pipe(inputStream, parser, outputStream, cb))
 }
 
 if (argv.mode === enums.mode.READING) {
