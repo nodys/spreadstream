@@ -1,6 +1,6 @@
 {
   "name": "spreadstream",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Pipe data from and to google spreadsheet",
   "main": "./lib/spreadstream.js",
   "bin": {
