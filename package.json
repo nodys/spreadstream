@@ -1,7 +1,7 @@
 {
   "name": "spreadstream",
   "version": "0.2.0",
-  "description": "Pipe your csv to google spreadsheet",
+  "description": "Pipe data from and to google spreadsheet",
   "main": "./lib/spreadstream.js",
   "bin": {
     "spreadstream": "./bin/spreadstream.js"
@@ -21,9 +21,13 @@
   },
   "keywords": [
     "spreadsheet",
+    "sheet",
     "google",
     "stream",
     "pipe",
+    "json",
+    "ndjson",
+    "ldjson",
     "csv"
   ],
   "author": "Jean Ponchon <jean.ponchon@novadiscovery.com>",

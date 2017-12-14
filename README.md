@@ -1,9 +1,15 @@
 # spreadstream
 [![Build Status](https://travis-ci.org/nodys/spreadstream.svg?branch=master)](https://travis-ci.org/nodys/spreadstream) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com) [![Clussh on npm](https://img.shields.io/npm/v/spreadstream.svg)](https://www.npmjs.com/package/spreadstream)
 
+Pipe data from and to google spreadsheet
 
+---
 
-Pipe your csv to google spreadsheet
+<p align="center">
+  <img src="https://nodys.github.io/spreadstream/spreadstream.png" alt="clussh">
+</p>
+
+---
 
 # Cli
 
@@ -16,19 +22,7 @@ npm install -g spreadstream
 
 Create a `spreadstream` [rc](https://www.npmjs.com/package/rc) file with your google service account (see [below](#create-a-service-account)) and any other command line options. `spreadstream` will look for any [standard rc file path](https://www.npmjs.com/package/rc#standards).
 
-```js
-// .spreadstreamrc
-{
-  "credential": {
-    "type": "service_account",
-    // ... other configs
-  },
-  // You can default value for any spreadstream command line options...
-  "id": "spreadsheet id",
-  "sheet": "My Sheet",
-  // ... etc.
-}
-```
+See [configuration](#configuration) for detailled instructions.
 
 ## Usage
 
@@ -39,10 +33,10 @@ Create a `spreadstream` [rc](https://www.npmjs.com/package/rc) file with your go
 cat mydocument.csv | spreadstream
 
 # Or read a csv file
-spreadstream mydocument.csv
+spreadstream --input mydocument.csv
 
-# Choose the sheet:
-cat mydocument.csv | spreadsheet --sheet "My Sheet"
+# Choose the document and the sheet (or use configuration file):
+cat mydocument.csv | spreadsheet --id="ya29.GlsiBTHclgwXhCs3dJZHp" --sheet "My Sheet"
 
 # Clear sheet first (replace)
 cat mydocument.csv | spreadsheet --replace
@@ -55,13 +49,20 @@ cat mydocument.ndjson | spreadsheet --json
 
 ```sh
 # Read sheet
-spreadsheet --read
+spreadsheet
+
+# Choose the document and the sheet (or use configuration file):
+spreadsheet --id="ya29.GlsiBTHclgwXhCs3dJZHp" --sheet "My Sheet"
 
 # Change csv output (same options than for input):
-spreadsheet --read --csv-separator ";"
+spreadsheet --csv-separator ";"
 
 # output as line delimited json instead of csv
-spreadsheet --read --json
+spreadsheet --json
+
+# Write output to a file
+spreadsheet > myfile.csv
+spreadsheet --output myfile.csv
 ```
 
 ### Options
@@ -69,43 +70,104 @@ spreadsheet --read --json
 See `spreadstream --help`:
 
 ```
-spreadstream [options] [input csv file]
+spreadstream [options]
 
 Options:
-  --help                Show help                                      [boolean]
-  --version             Show version number                            [boolean]
-  --credential          Google service account credential config file   [string]
-  --id, -i              Identifier of the spreadsheet document
+  --help                  Show help                                    [boolean]
+  --version               Show version number                          [boolean]
+  --settings              Path to JSON config file
+  --id, --spreadsheet-id  Identifier of the spreadsheet document
                                                              [string] [required]
-  --sheet, -s           Name of the sheet                    [string] [required]
-  --replace             Replace data in the sheet (clear all values in the
-                        sheet)                                         [boolean]
-  --verbose             Print some informations       [boolean] [default: false]
-  --value-input-option  Type of insertion (see sheet api)
-             [string] [choices: "USER_ENTERED", "RAW"] [default: "USER_ENTERED"]
-  --max-buffer          Buffer max size before flushing to spreadsheet (default:
-                        10000)                          [number] [default: 5000]
-  --csv-separator       Csv parser: optional separator                  [string]
-  --csv-quote           Csv parser: optional quote character            [string]
-  --csv-escape          Csv parser: optional quote escape (default to quote
-                        character)                                      [string]
-  --csv-newline         Csv parser: optional new line                   [string]
-  --csv-headers         Csv parser: specify headers                      [array]
-  --json                Input / output format should use json
+  --sheet, -s             Name of the sheet                  [string] [required]
+  --replace               Replace data in the sheet (clear all values in the
+                          sheet)                                       [boolean]
+  --verbose               Print some informations     [boolean] [default: false]
+  --value-input-option    Determines how input data should be interpreted
+                                       [string] [choices: "USER_ENTERED", "RAW"]
+  --major-dimension       Indicates which dimension read operation should apply
+                          to               [string] [choices: "COLUMNS", "ROWS"]
+  --value-render          Determines how values should be rendered in the the
+                          output
+           [string] [choices: "FORMATTED_VALUE", "UNFORMATTED_VALUE", "FORMULA"]
+  --date-time-render      Determines how dates should be rendered in the the
+                          output
+               [string] [choices: "SERIAL_NUMBER", "FORMATTED_STRING"] [default:
+                                                                "SERIAL_NUMBER"]
+  --max-buffer            Buffer max size before flushing to spreadsheet
+                          (default: 10000)              [number] [default: 5000]
+  --csv-separator         Csv parser: optional separator                [string]
+  --csv-quote             Csv parser: optional quote character          [string]
+  --csv-escape            Csv parser: optional quote escape (default to quote
+                          character)                                    [string]
+  --csv-newline           Csv parser: optional new line                 [string]
+  --csv-headers           Csv parser: specify headers                    [array]
+  --json                  Input / output format should use json
                                                       [boolean] [default: false]
-  --read                Read sheet instead of writing                  [boolean]
-
-This tool require a Google Service Account with write permission.
-You must create an service account add share the spreadsheet with the
-account email (see below for details).
-
-Then, you can either:
-
-- Use the --credential targeting an user account config file
-- Add a rc file for ${APPNAME} (eg. ~/.config/${APPNAME}/config) with a
-  credential key (see https://www.npmjs.com/package/rc for valid rc
-  file path).
+  --input                 Input file to stream to sheet instead of stdin. `-`
+                          force reading from stdin (imply writing mode) [string]
+  --output                Output file to stream sheet data to. `-` force writing
+                          to stdout (imply reading mode)                [string]
 ```
+
+## Configuration
+
+You will need google api credential for the Google Sheet Api.
+
+Two solutions are available:
+
+- [Create a service account](#create-a-service-account) and share your document with the generated account email.
+- Or use [googleauth](https://github.com/maxogden/googleauth) to create a credential to your own account
+
+Once created, put your credential in a [Rc file](#rc-file).
+
+### Create a service account
+
+1. Go to the [Google Developers Console](https://console.developers.google.com/project)
+2. Select your project or create a new one (and then select it)
+3. Enable the Drive API for your project
+  - In the sidebar on the left, expand __APIs & auth__ > __APIs__
+  - Search for "drive"
+  - Click on "Drive API"
+  - Click the blue "Enable API" button
+4. Create a service account for your project
+  - In the sidebar on the left, expand __APIs & auth__ > __Credentials__
+  - Click blue "Add credentials" button
+  - Select the "Service account" option
+  - Select "Furnish a new private key" checkbox
+  - Select the "JSON" key type option
+  - Click blue "Create" button
+  - Your JSON key file is generated and downloaded to your machine
+    (__it is the only copy!__)
+  - Note your service account's email address (also available in the JSON
+    key file)
+5. Share the doc (or docs) with your service account using the email
+   noted above
+
+*(credit: [node-google-spreadsheet]( https://github.com/theoephraim/node-google-spreadsheet/blob/master/README.md#service-account-recommended-method))*
+
+### Rc file
+
+The rc file must contain the credential as created previously. You can add any other spreadstream options (see `spreadsheet --help`) (eg. spreadsheet `id`, `sheet` title, etc.).
+
+Put your rc file in any [standard rc file path](https://www.npmjs.com/package/rc) or use the `--settings` option.
+
+Exemple with a local `.spreadstreamrc` file:
+
+```js
+// .spreadstreamrc
+{
+  "credential": {
+    "access_token": "xx",
+    // ...
+  },
+  // You can default value for any spreadstream command line options...
+  "id": "spreadsheet id",
+  "sheet": "My Sheet",
+  "json": true
+  // ... etc.
+}
+```
+
 
 
 # Api
@@ -176,49 +238,6 @@ stream.end()
 spreadstream.readDocument(config).then(values => console.log(values))
 
 ```
-
-# Create a service account
-
-1. Go to the [Google Developers Console](https://console.developers.google.com/project)
-2. Select your project or create a new one (and then select it)
-3. Enable the Drive API for your project
-  - In the sidebar on the left, expand __APIs & auth__ > __APIs__
-  - Search for "drive"
-  - Click on "Drive API"
-  - Click the blue "Enable API" button
-4. Create a service account for your project
-  - In the sidebar on the left, expand __APIs & auth__ > __Credentials__
-  - Click blue "Add credentials" button
-  - Select the "Service account" option
-  - Select "Furnish a new private key" checkbox
-  - Select the "JSON" key type option
-  - Click blue "Create" button
-  - Your JSON key file is generated and downloaded to your machine
-    (__it is the only copy!__)
-  - Note your service account's email address (also available in the JSON
-    key file)
-5. Share the doc (or docs) with your service account using the email
-   noted above
-
-Your credential account file (or the spreadstream rc file) should look like this:
-
-```json
-{
-  "credential": {
-    "type": "service_account",
-    "project_id": "spreadstream-xxxx",
-    "private_key_id": "xxxx",
-    "private_key": "-----BEGIN PRIVATE KEY-----\nxxx\n-----END PRIVATE KEY-----\n",
-    "client_email": "spreadstream@spreadstream-xxxx.iam.gserviceaccount.com",
-    "client_id": "00000000",
-    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-    "token_uri": "https://accounts.google.com/o/oauth2/token",
-    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/spreadstream%40spreadstream-xxxx.iam.gserviceaccount.com"
-  }
-}
-```
-(credit: https://github.com/theoephraim/node-google-spreadsheet/blob/master/README.md#service-account-recommended-method)
 
 
 ---
