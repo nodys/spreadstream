@@ -9,22 +9,70 @@ Pipe data from and to google spreadsheet
   <img src="https://nodys.github.io/spreadstream/spreadstream.png" alt="clussh">
 </p>
 
+Read
+```sh
+spreadstream > data.csv
+spreadstream --json > data.ndjson
+```
+
+Write
+```sh
+cat data.csv | spreadstream
+cat data.ndjson | spreadstream --json
+```
+
 ---
 
-# Cli
-
-## Installation
-Install spreadstream globally:
+##  Install
 
 ```sh
 npm install -g spreadstream
 ```
 
-Create a `spreadstream` [rc](https://www.npmjs.com/package/rc) file with your google service account (see [below](#create-a-service-account)) and any other command line options. `spreadstream` will look for any [standard rc file path](https://www.npmjs.com/package/rc#standards).
+Then:
 
-See [configuration](#configuration) for detailled instructions.
+1. [Create a Google authentication token](#google-authentication-token) and make sure the account (or the service account) can acces the spreadsheets you plan to use.
+2. Create a [rc file](#rc-file) with your authentication token
+
+
+## Configuration
+
+### Google authentication token
+You need to create a Google authentication token for the Google Sheet Api.
+
+Two solutions are available:
+
+- [Create a service account](#create-a-service-account) and share your document with the generated account email.
+- [Use googleauth](https://github.com/maxogden/googleauth) to create a Google OAuth 2.0 authentication token with your own account.
+
+Once created, put your authentication token in a [rc file](#rc-file)
+
+### Rc file
+The rc file must contain the `credential` key with the google authentication token created previously. You can add any other spreadstream options (see `spreadsheet --help`). The location of the rc file depend on your needs: either at a [standard rc file path](https://www.npmjs.com/package/rc) or specified using the `--settings` option.
+
+**Exemple:**
+
+```js
+// .spreadstreamrc
+{
+  // Your google authentication token created previously:
+  "credential": {
+    "access_token": "xx",
+    "expires_in": 3600,
+    "refresh_token":"xx",
+    "token_type":"Bearer"
+  },
+  // You can set default value for any spreadstream command line options...
+  "id": "spreadsheet id", // The document id from the spreadsheet url
+  "sheet": "My Sheet",    // The sheet title in your document
+  "json": true
+  // ...
+}
+```
 
 ## Usage
+
+The examples below depends on the availability of a [rc file](#rc-file) containing a valid `credential`, a spreadsheet document `id` and a `sheet` title.
 
 ### Write data to google spreadsheet
 
@@ -74,112 +122,58 @@ spreadsheet --output myfile.csv
 
 ### Options
 
-See `spreadstream --help`:
+See too `spreadstream --help` for detailled command line usage, options and default values.
 
-```
-spreadstream [options]
+The [API](#api) use the camelCase version for the dashed options names. Every options can be set in the [rc file](#rc-file) using either camelCase or kebab-case format.
 
-Options:
-  --help                  Show help                                    [boolean]
-  --version               Show version number                          [boolean]
-  --settings              Path to JSON config file
-  --id, --spreadsheet-id  Identifier of the spreadsheet document
-                                                             [string] [required]
-  --sheet, -s             Name of the sheet                  [string] [required]
-  --replace               Replace data in the sheet (clear all values in the
-                          sheet)                                       [boolean]
-  --verbose               Print some informations     [boolean] [default: false]
-  --value-input-option    Determines how input data should be interpreted
-                                       [string] [choices: "USER_ENTERED", "RAW"]
-  --major-dimension       Indicates which dimension read operation should apply
-                          to               [string] [choices: "COLUMNS", "ROWS"]
-  --value-render          Determines how values should be rendered in the the
-                          output
-           [string] [choices: "FORMATTED_VALUE", "UNFORMATTED_VALUE", "FORMULA"]
-  --date-time-render      Determines how dates should be rendered in the the
-                          output
-               [string] [choices: "SERIAL_NUMBER", "FORMATTED_STRING"] [default:
-                                                                "SERIAL_NUMBER"]
-  --max-buffer            Buffer max size before flushing to spreadsheet
-                          (default: 10000)              [number] [default: 5000]
-  --csv-separator         Csv parser: optional separator                [string]
-  --csv-quote             Csv parser: optional quote character          [string]
-  --csv-escape            Csv parser: optional quote escape (default to quote
-                          character)                                    [string]
-  --csv-newline           Csv parser: optional new line                 [string]
-  --csv-headers           Csv parser: specify headers                    [array]
-  --json                  Input / output format should use json
-                                                      [boolean] [default: false]
-  --input                 Input file to stream to sheet instead of stdin. `-`
-                          force reading from stdin (imply writing mode) [string]
-  --output                Output file to stream sheet data to. `-` force writing
-                          to stdout (imply reading mode)                [string]
-```
+- `--id`
+   Identifier of the spreadsheet document
+   <small>The spreadsheet document id is the long uniq id in the url of the docuement such as `Dh9CsT4eXiTeKQLWZLpM..`</small>
+- `--sheet`
+   Title of the sheet in the document
+- `--replace`
+   Write in overwrite mode: replace the content of the sheet (the default behavior is to append new rows at the end)
+- `--verbose`
+  Be verbose about what is done (on stderr)
+- `--value-input`
+  Determines how input data should be interpreted (default: `USER_ENTERED`) ([more](https://developers.google.com/sheets/api/reference/rest/v4/ValueInputOption))
+- `--major-dimension`
+  Indicates which dimension read operation should apply to (default: `ROWS`) ([more](https://developers.google.com/sheets/api/reference/rest/v4/Dimension))
+- `--value-render`
+  Determines how values should be rendered in the the output while reading (default: `FORMATTED_VALUE`) ([more](https://developers.google.com/sheets/api/reference/rest/v4/valueRender))
+- `--date-time-render`
+   Determines how dates should be rendered in the the while reading (default: `SERIAL_NUMBER`) ([more](https://developers.google.com/sheets/api/reference/rest/v4/dateTimeRender))
+- `--max-buffer`
+   Buffer max size before flushing to spreadsheet (default: `1000`).
+   How many row of data should should be sent at once to the spreadsheet while writing.
+   A lower value would negatively impact speed and API usage limits, but will produce live atomic update with light and slow stream of data (eg. a line-delimited-json log producer).
+- `--range`
+   Fore reading: The A1 notation of the values to retrieve. Default is to select the whole sheet.
+   Exemples: `A1:D3` a 4x3 range, `A:D` the four first columns, `12:30` for lines from 12 to 30
+- `--csv-separator`
+   Csv separator (both for the parser and the writer).
+   Default to auto-detect and `,`
+- `--csv-quote`
+   Csv quote (both for the parser and the writer)
+   Default to auto-detect and `"`
+- `--csv-escape`
+   Csv quote escaping (both for the parser and the writer)
+   Default to auto-detect and `""`
+- `--csv-newline`
+   Csv new line character
+   Default to auto-detect and `\n`
+- `--json`
+   Use [new line delimited json](http://ndjson.org/) parser and writer instead of csv as input and output.
+- `--input`
+   Set input file. Default is to read from stdin outside of a tty environnement.
+   Reading from stdin can be forced by setting this option to `-`.
+- `--output`
+   Set output file. Default is to write to stdout.
+   Writing to stdout can be forced by setting this option to `-`.
+- `completion`
+   Generate bash completion code (`spreadstream completion >> $HOME/.bashrc`)
 
-## Configuration
-
-You will need google api credential for the Google Sheet Api.
-
-Two solutions are available:
-
-- [Create a service account](#create-a-service-account) and share your document with the generated account email.
-- Or use [googleauth](https://github.com/maxogden/googleauth) to create a credential to your own account
-
-Once created, put your credential in a [Rc file](#rc-file).
-
-### Create a service account
-
-1. Go to the [Google Developers Console](https://console.developers.google.com/project)
-2. Select your project or create a new one (and then select it)
-3. Enable the Drive API for your project
-   - Search for "drive"
-   - In the sidebar on the left, expand __APIs & auth__ > __APIs__
-   - Click on "Drive API"
-   - Click the blue "Enable API" button
-4. Create a service account for your project
-   - In the sidebar on the left, expand __APIs & auth__ > __Credentials__
-   - Click blue "Add credentials" button
-   - Select the "Service account" option
-   - Select "Furnish a new private key" checkbox
-   - Select the "JSON" key type option
-   - Click blue "Create" button
-   - Your JSON key file is generated and downloaded to your machine
-     (__it is the only copy!__)
-   - Note your service account's email address (also available in the JSON
-     key file)
-5. Share the doc (or docs) with your service account using the email
-   noted above
-
-*(credit: [node-google-spreadsheet]( https://github.com/theoephraim/node-google-spreadsheet/blob/master/README.md#service-account-recommended-method))*
-
-### Rc file
-
-The rc file must contain the credential as created previously. You can add any other spreadstream options (see `spreadsheet --help`) (eg. spreadsheet `id`, `sheet` title, etc.).
-
-Put your rc file in any [standard rc file path](https://www.npmjs.com/package/rc) or use the `--settings` option.
-
-Exemple with a local `.spreadstreamrc` file:
-
-```js
-// .spreadstreamrc
-{
-  "credential": {
-    "access_token": "xx",
-    // ...
-  },
-  // You can default value for any spreadstream command line options...
-  "id": "spreadsheet id",
-  "sheet": "My Sheet",
-  "json": true
-  // ... etc.
-}
-```
-
-
-
-# Api
-
-The basic api usage
+## Api
 
 ```js
 const spreadstream = require('spreadstream')
@@ -205,7 +199,7 @@ const config = {
   // - USER_ENTERED: The values will be parsed as if the user typed them into the UI (the default)
   // - RAW: The values will be stored as-is.
   // See https://developers.google.com/sheets/api/reference/rest/v4/ValueInputOption
-  valueInputOption: spreadstream.USER_ENTERED,
+  valueInput: spreadstream.USER_ENTERED,
 
   // How many row must be keept in the stream buffer before flushing
   // data to the document (default: 5000)
@@ -228,24 +222,55 @@ const stream = spreadstream(config)
 // Stream of Array:
 // Each array is a row in the sheet. The first row must contain
 // the headers (either when the config `headers` option is provided)
-stream.write(['foo', 'bar'])
-stream.write(['4', '2'])
-stream.write(['7', '10'])
-stream.end()
+const stream1 = spreadstream(config)
+stream1.write(['foo', 'bar'])
+stream1.write(['4', '2'])
+stream1.write(['7', '10'])
+stream1.end()
 
 
 // Stream of Object
 // The first row must not contain the headers (the object keys will be used)
-stream.write({ foo: 4, bar: 2 })
-stream.write({ foo: 7, bar: 10 })
-stream.end()
+const stream2 = spreadstream(config)
+stream2.write({ foo: 4, bar: 2 })
+stream2.write({ foo: 7, bar: 10 })
+stream2.end()
 
+
+// Pipe data from stdin (eg. with ndjson):
+process.stdin
+  .pipe(require('ndjson').parse())
+  .pipe(spreadstream(config))
 
 // Read a document
 spreadstream.readDocument(config).then(values => console.log(values))
 
 ```
 
+## Create a service account
+
+1. Go to the [Google Developers Console](https://console.developers.google.com/project)
+2. Select your project or create a new one (and then select it)
+3. Enable the Drive API for your project
+   - Search for "drive"
+   - In the sidebar on the left, expand __APIs & auth__ > __APIs__
+   - Click on "Drive API"
+   - Click the blue "Enable API" button
+4. Create a service account for your project
+   - In the sidebar on the left, expand __APIs & auth__ > __Credentials__
+   - Click blue "Add credentials" button
+   - Select the "Service account" option
+   - Select "Furnish a new private key" checkbox
+   - Select the "JSON" key type option
+   - Click blue "Create" button
+   - Your JSON key file is generated and downloaded to your machine
+     (__it is the only copy!__)
+   - Note your service account's email address (also available in the JSON
+     key file)
+5. Share the doc (or docs) with your service account using the email
+   noted above
+
+*(credit: [node-google-spreadsheet]( https://github.com/theoephraim/node-google-spreadsheet/blob/master/README.md#service-account-recommended-method))*
 
 ---
 

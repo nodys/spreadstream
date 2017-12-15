@@ -31,7 +31,7 @@ const argv = yargs
     type: 'string',
     required: true,
     alias: 's',
-    description: 'Name of the sheet'
+    description: 'Title of the document sheet'
   })
   .option('replace', {
     type: 'boolean',
@@ -55,18 +55,18 @@ const argv = yargs
   .option('value-render', {
     type: 'string',
     choices: Object.values(enums.valueRender),
-    description: 'Determines how values should be rendered in the the output'
+    description: 'Determines how values should be rendered in the the output while reading'
   })
   .option('date-time-render', {
     type: 'string',
     default: enums.dateTimeRender.SERIAL_NUMBER,
     choices: Object.values(enums.dateTimeRender),
-    description: 'Determines how dates should be rendered in the the output'
+    description: 'Determines how dates should be rendered in the the output while reading'
   })
   .option('max-buffer', {
     type: 'number',
-    default: 5000,
-    description: 'Buffer max size before flushing to spreadsheet (default: 10000)'
+    default: 10000,
+    description: 'Buffer max size before flushing to spreadsheet'
   })
   .option('range', {
     type: 'string',
@@ -87,10 +87,6 @@ const argv = yargs
   .option('csv-newline', {
     type: 'string',
     description: 'Csv parser: optional new line'
-  })
-  .option('csv-headers', {
-    type: 'array',
-    description: 'Csv parser: specify headers'
   })
   .option('json', {
     type: 'boolean',
@@ -120,7 +116,7 @@ const csvOptions = {
   quote: argv['csv-quote'],
   escape: argv['csv-escape'],
   newline: argv['csv-newline'],
-  headers: argv['csv-headers']
+  headers: argv['headers']
 }
 
 // Reading or writing ?
