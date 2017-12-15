@@ -7,7 +7,7 @@
     "spreadstream": "./bin/spreadstream.js"
   },
   "scripts": {
-    "test": "npm run lint && mocha",
+    "test": "npm run lint && nyc mocha",
     "test:watch": "mocha -w",
     "coverage": "nyc mocha",
     "coverage:html": "npm run coverage && nyc report --reporter=html",
