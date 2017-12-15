@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.0.0"></a>
+# [1.0.0](https://github.com/nodys/spreadstream/compare/v0.3.0...v1.0.0) (2017-12-15)
+
+
+### Bug Fixes
+
+* Max buffer inclusive range ([c8b8196](https://github.com/nodys/spreadstream/commit/c8b8196))
+* **doc:** Add missing code syntax highlight ([ec9a102](https://github.com/nodys/spreadstream/commit/ec9a102))
+
+
+### Features
+
+* Simplify read method, add range option ([8a9a456](https://github.com/nodys/spreadstream/commit/8a9a456))
+* **doc:** Cleanup documentation ([b74fcd9](https://github.com/nodys/spreadstream/commit/b74fcd9))
+
+
+
 <a name="0.3.0"></a>
 # [0.3.0](https://github.com/nodys/spreadstream/compare/v0.2.0...v0.3.0) (2017-12-14)
 
