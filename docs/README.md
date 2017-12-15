@@ -54,6 +54,13 @@ spreadsheet
 # Choose the document and the sheet (or use configuration file):
 spreadsheet --id="ya29.GlsiBTHclgwXhCs3dJZHp" --sheet "My Sheet"
 
+# Limit reading range with A1 notation
+# https://developers.google.com/sheets/api/guides/concepts#a1_notation
+spreadsheet --range="A:C"
+spreadsheet --range="A1:C4"
+spreadsheet --range="1:4"
+spreadsheet --range="My Sheet!1:4" # Override sheet
+
 # Change csv output (same options than for input):
 spreadsheet --csv-separator ";"
 

@@ -68,6 +68,10 @@ const argv = yargs
     default: 5000,
     description: 'Buffer max size before flushing to spreadsheet (default: 10000)'
   })
+  .option('range', {
+    type: 'string',
+    description: 'The A1 notation of the values to retrieve (for reading). Default is all the sheet.'
+  })
   .option('csv-separator', {
     type: 'string',
     description: 'Csv parser: optional separator'
