@@ -91,5 +91,77 @@ describe('spreadstream', function () {
       expect(mocked.values.append[0].resource.values).to.eql([ [ 24, 42 ] ])
       expect(mocked.values.clear).to.be.eql([])
     })
+
+    it('should limit data according to header list (only with object stream)', async () => {
+      const stream = spreadstream({ ...defconf, headers: ['bar'] })
+      stream.write({ foo: 24, bar: 42 })
+      stream.end()
+      await fromCallback(cb => miss.finished(stream, cb))
+      expect(mocked.values.append[0].resource.values).to.eql([ [ 42 ] ])
+      expect(mocked.values.clear).to.be.eql([])
+    })
+
+    it('should flush many times (according to maxBuffer)', async () => {
+      const stream = spreadstream({ ...defconf, maxBuffer: 1 })
+      stream.write(['foo', 'bar'])
+      stream.write([1, 42])
+      stream.write([2, 42])
+      stream.write([3, 42])
+      stream.end()
+      await fromCallback(cb => miss.finished(stream, cb))
+      expect(mocked.values.append).to.have.length(4) // First flush is the header
+    })
+
+    it('should handle properly write errors', async () => {
+      const stream = spreadstream({ ...defconf })
+      spreadstream.google.sheets.spreadsheets.values
+        .append = (_, done) => { done(new Error('Network error')) }
+      stream.write(['foo', 'bar'])
+      stream.write([24, 42])
+      stream.end()
+      await expect(fromCallback(cb => miss.finished(stream, cb)))
+        .to.eventually.be.rejected
+    })
+
+    it('should create the sheet if the sheet does not exists', async () => {
+      const stream = spreadstream({ ...defconf })
+      spreadstream.google.sheets.spreadsheets.get = ({ spreadsheetId }, done) => {
+        done(null, {
+          spreadsheetId,
+          sheets: [ ]
+        })
+      }
+      stream.write(['foo', 'bar'])
+      stream.write([24, 42])
+      stream.end()
+      await fromCallback(cb => miss.finished(stream, cb))
+      expect(mocked.values.append[0].resource.values).to.eql([ [ 'foo', 'bar' ], [ 24, 42 ] ])
+      expect(mocked.batchUpdate[0].resource.requests[0]).to.eql(
+        { addSheet: {
+          properties: { title: 'test', gridProperties: { rowCount: 1, columnCount: 1 } }
+        }}, 'should add header if the sheet does not exists (and replace is false)')
+    })
+  })
+
+  describe('spreadstream.readDocument()', function () {
+    it('should return a sheet content (full)', async () => {
+      let result = await spreadstream.readDocument({ ...defconf })
+      expect(mocked.values.get).to.have.length(1)
+      expect(result).to.eql([ [ 'foo', 'bar' ], [ 24, 42 ] ])
+    })
+
+    it('should return a sheet content (range)', async () => {
+      let result = await spreadstream.readDocument({ ...defconf, range: 'A1:B2' })
+      expect(mocked.values.get).to.have.length(1)
+      expect(mocked.values.get[0].range).to.eql(`'test'!A1:B2`)
+      expect(result).to.eql([ [ 'foo', 'bar' ], [ 24, 42 ] ])
+    })
+
+    it('should loosly support unreadable sheet (returning empty set)', async () => {
+      spreadstream.google.sheets.spreadsheets.values
+        .get = (_, done) => done(new Error('Not found'))
+      let result = await spreadstream.readDocument({ ...defconf, range: 'A1:B2' })
+      expect(result).to.eql([ ])
+    })
   })
 })

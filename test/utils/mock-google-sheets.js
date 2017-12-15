@@ -5,6 +5,7 @@ function makeMock () {
     get: [],
     batchUpdate: [],
     values: {
+      get: [],
       clear: [],
       append: []
     }
@@ -31,6 +32,10 @@ function makeMock () {
       },
 
       values: {
+        get: (params, cb) => {
+          mocked.values.get.push(params)
+          cb(null, { values: [ [ 'foo', 'bar' ], [ 24, 42 ] ] })
+        },
         clear: (data, cb) => {
           mocked.values.clear.push(data)
           cb()
