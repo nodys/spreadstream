@@ -12,7 +12,7 @@
     "coverage": "nyc mocha",
     "coverage:html": "npm run coverage && nyc report --reporter=html",
     "lint": "standard",
-    "docs": "cp README.md ./docs/README.md && git commit -m 'doc: Update documentation' ./docs > /dev/null && echo 'doc: Changes commited' || echo 'doc: No change'",
+    "docs": "ln -f README.md ./docs/README.md && git commit -m 'doc: Update documentation' ./docs/README.md ./README.md > /dev/null && echo 'doc: Changes commited' || echo 'doc: No change'",
     "gitready": "git diff --exit-code > /dev/null && git diff --cached --exit-code > /dev/null || echo 'Please commit changes first'",
     "release": "npm run docs && npm run gitready && npm test && standard-version",
     "release:major": "npm run release -- --release-as major",
