@@ -31,7 +31,7 @@ npm install -g spreadstream
 
 Then:
 
-1. [Create a Google authentication token](#google-authentication-token) and make sure the account (or the service account) can acces the spreadsheets you plan to use.
+1. [Create a Google authentication token](#google-authentication-token) and make sure the account (or the service account) can access the spreadsheets you plan to use.
 2. Create a [rc file](#rc-file) with your authentication token
 
 
@@ -74,7 +74,7 @@ The rc file must contain the `credential` key with the google authentication tok
 
 The examples below depends on the availability of a [rc file](#rc-file) containing a valid `credential`, a spreadsheet document `id` and a `sheet` title.
 
-### Write data to google spreadsheet
+### Write data to Google Spreadsheet
 
 ```sh
 # Pipe csv to spreadstream (append new rows to the sheet)
@@ -93,7 +93,7 @@ cat mydocument.csv | spreadsheet --replace
 cat mydocument.ndjson | spreadsheet --json
 ```
 
-### Read data from google spreadsheet
+### Read data from Google Spreadsheet
 
 ```sh
 # Read sheet
@@ -122,13 +122,13 @@ spreadsheet --output myfile.csv
 
 ### Options
 
-See too `spreadstream --help` for detailled command line usage, options and default values.
+See too `spreadstream --help` for detailed command line usage, options and default values.
 
-The [API](#api) use the camelCase version for the dashed options names. Every options can be set in the [rc file](#rc-file) using either camelCase or kebab-case format.
+The [API](#api) use the camelCase version for the dashed options names. Every option can be set in the [rc file](#rc-file) using either camelCase or kebab-case format.
 
 - `--id`
    Identifier of the spreadsheet document
-   <small>The spreadsheet document id is the long uniq id in the url of the docuement such as `Dh9CsT4eXiTeKQLWZLpM..`</small>
+   <small>The spreadsheet document id is the long unique identifier in the URL of the document looking like `Dh9CsT4eXiTeKQLWZLpM..`</small>
 - `--sheet`
    Title of the sheet in the document
 - `--replace`
@@ -145,8 +145,8 @@ The [API](#api) use the camelCase version for the dashed options names. Every op
    Determines how dates should be rendered in the the while reading (default: `SERIAL_NUMBER`) ([more](https://developers.google.com/sheets/api/reference/rest/v4/dateTimeRender))
 - `--max-buffer`
    Buffer max size before flushing to spreadsheet (default: `1000`).
-   How many row of data should should be sent at once to the spreadsheet while writing.
-   A lower value would negatively impact speed and API usage limits, but will produce live atomic update with light and slow stream of data (eg. a line-delimited-json log producer).
+   How many row of data should be sent at once to the spreadsheet while writing.
+   A lower value would negatively impact speed and API usage limits, but it will produce atomic update of your document when used with light and slow stream of data (eg. a line-delimited-json log producer).
 - `--range`
    Fore reading: The A1 notation of the values to retrieve. Default is to select the whole sheet.
    Exemples: `A1:D3` a 4x3 range, `A:D` the four first columns, `12:30` for lines from 12 to 30
@@ -165,7 +165,7 @@ The [API](#api) use the camelCase version for the dashed options names. Every op
 - `--json`
    Use [new line delimited json](http://ndjson.org/) parser and writer instead of csv as input and output.
 - `--input`
-   Set input file. Default is to read from stdin outside of a tty environnement.
+   Set input file. Default is to read from stdin outside of a tty environment.
    Reading from stdin can be forced by setting this option to `-`.
 - `--output`
    Set output file. Default is to write to stdout.
