@@ -127,8 +127,10 @@ describe('spreadstream', function () {
       const stream = spreadstream({ ...defconf })
       spreadstream.google.sheets.spreadsheets.get = ({ spreadsheetId }, done) => {
         done(null, {
-          spreadsheetId,
-          sheets: [ ]
+          data: {
+            spreadsheetId,
+            sheets: [ ]
+          }
         })
       }
       stream.write(['foo', 'bar'])

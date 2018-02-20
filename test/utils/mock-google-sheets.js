@@ -17,24 +17,26 @@ function makeMock () {
         const { spreadsheetId } = query
         mocked.get.push(query)
         cb(null, {
-          spreadsheetId,
-          sheets: [ makeMock.makeSheet() ]
+          data: {
+            spreadsheetId,
+            sheets: [ makeMock.makeSheet() ]
+          }
         })
       },
 
       batchUpdate (query, cb) {
         mocked.batchUpdate.push(query)
-        cb(null, { replies: query.resource.requests.map(q => {
+        cb(null, { data: { replies: query.resource.requests.map(q => {
           const key = Object.keys(q)[0]
           const param = q[key]
           return param
-        })})
+        })}})
       },
 
       values: {
         get: (params, cb) => {
           mocked.values.get.push(params)
-          cb(null, { values: [ [ 'foo', 'bar' ], [ 24, 42 ] ] })
+          cb(null, { data: { values: [ [ 'foo', 'bar' ], [ 24, 42 ] ] } })
         },
         clear: (data, cb) => {
           mocked.values.clear.push(data)
