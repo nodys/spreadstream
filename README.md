@@ -48,7 +48,7 @@ Two solutions are available:
 Once created, put your authentication token in a [rc file](#rc-file)
 
 ### Rc file
-The rc file must contain the `credential` key with the google authentication token created previously. You can add any other spreadstream options (see `spreadsheet --help`). The location of the rc file depend on your needs: either at a [standard rc file path](https://www.npmjs.com/package/rc) or specified using the `--settings` option.
+The rc file must contain the `credential` key with the google authentication token created previously. You can add any other spreadstream options (see `spreadstream --help`). The location of the rc file depend on your needs: either at a [standard rc file path](https://www.npmjs.com/package/rc) or specified using the `--settings` option.
 
 **Exemple:**
 
@@ -84,40 +84,40 @@ cat mydocument.csv | spreadstream
 spreadstream --input mydocument.csv
 
 # Choose the document and the sheet (or use configuration file):
-cat mydocument.csv | spreadsheet --id="ya29.GlsiBTHclgwXhCs3dJZHp" --sheet "My Sheet"
+cat mydocument.csv | spreadstream --id="ya29.GlsiBTHclgwXhCs3dJZHp" --sheet "My Sheet"
 
 # Clear sheet first (replace)
-cat mydocument.csv | spreadsheet --replace
+cat mydocument.csv | spreadstream --replace
 
 # Pipe line delimited json instead of csv
-cat mydocument.ndjson | spreadsheet --json
+cat mydocument.ndjson | spreadstream --json
 ```
 
 ### Read data from Google Spreadsheet
 
 ```sh
 # Read sheet
-spreadsheet
+spreadstream
 
 # Choose the document and the sheet (or use configuration file):
-spreadsheet --id="ya29.GlsiBTHclgwXhCs3dJZHp" --sheet "My Sheet"
+spreadstream --id="ya29.GlsiBTHclgwXhCs3dJZHp" --sheet "My Sheet"
 
 # Limit reading range with A1 notation
 # https://developers.google.com/sheets/api/guides/concepts#a1_notation
-spreadsheet --range="A:C"
-spreadsheet --range="A1:C4"
-spreadsheet --range="1:4"
-spreadsheet --range="My Sheet!1:4" # Override sheet
+spreadstream --range="A:C"
+spreadstream --range="A1:C4"
+spreadstream --range="1:4"
+spreadstream --range="My Sheet!1:4" # Override sheet
 
 # Change csv output (same options than for input):
-spreadsheet --csv-separator ";"
+spreadstream --csv-separator ";"
 
 # output as line delimited json instead of csv
-spreadsheet --json
+spreadstream --json
 
 # Write output to a file
-spreadsheet > myfile.csv
-spreadsheet --output myfile.csv
+spreadstream > myfile.csv
+spreadstream --output myfile.csv
 ```
 
 ### Options
@@ -254,15 +254,15 @@ spreadstream.readDocument(config).then(values => console.log(values))
 3. Enable the Drive API for your project
    - Search for "drive"
    - In the sidebar on the left, expand __APIs & auth__ > __APIs__
-   - Click on "Drive API"
+   - Click on "[Google Sheets API](https://console.developers.google.com/apis/api/sheets.googleapis.com/overview)"
    - Click the blue "Enable API" button
 4. Create a service account for your project
    - In the sidebar on the left, expand __APIs & auth__ > __Credentials__
    - Click blue "Add credentials" button
-   - Select the "Service account" option
-   - Select "Furnish a new private key" checkbox
-   - Select the "JSON" key type option
-   - Click blue "Create" button
+   - Select the "Create service account key" option
+   - Select "New service account"
+   - Keep the "JSON" key type option selected
+   - Click blue "Create" button and complete the form
    - Your JSON key file is generated and downloaded to your machine
      (__it is the only copy!__)
    - Note your service account's email address (also available in the JSON
