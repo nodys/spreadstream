@@ -88,6 +88,10 @@ const argv = yargs
     type: 'string',
     description: 'Csv parser: optional new line'
   })
+  .option('headers', {
+    type: 'array',
+    description: 'Restrict headers (repeatable)'
+  })
   .option('json', {
     type: 'boolean',
     default: false,
@@ -133,7 +137,11 @@ if (argv.output) {
 
 // Handle errors
 function handleError (error) {
-  console.error('Error:', error.message)
+  if (argv.verbose) {
+    console.error(error.stack)
+  } else {
+    console.error('Error:', error.message, '(see --verbose for more)')
+  }
   process.exit(1)
 }
 
@@ -148,7 +156,7 @@ async function doRead (config) {
     : process.stdout
 
   // Read sheet values
-  const values = await spreadstream.readDocument(argv)
+  let values = await spreadstream.readDocument(argv)
 
   // Empty or the sheet does not exists
   if (!values.length) { return }
@@ -156,7 +164,16 @@ async function doRead (config) {
   const firstRow = values.shift()
   const headers = argv.headers || firstRow
 
-  const rows = values.map(row => {
+  let rows
+  csvOptions.sendHeaders = true
+
+  if (!values.length && !argv.json) {
+    // Output only headers
+    csvOptions.sendHeaders = false
+    values.push(headers)
+  }
+
+  rows = values.map(row => {
     return firstRow.reduce((memo, value, index) => {
       if (headers.includes(value)) {
         memo[value] = row[index]
