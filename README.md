@@ -38,14 +38,9 @@ Then:
 ## Configuration
 
 ### Google authentication token
-You need to create a Google authentication token for the Google Sheet Api.
+You need to create a Google authentication token for the Google Sheet Api: either a [service account](#create-a-service-account) or a [OAuth 2 token](#create-oauth2-token) to use your own account.
 
-Two solutions are available:
-
-- [Create a service account](#create-a-service-account) and share your document with the generated account email.
-- [Use googleauth](https://github.com/maxogden/googleauth) to create a Google OAuth 2.0 authentication token with your own account.
-
-Once created, put your authentication token in a [rc file](#rc-file)
+Once created, put your credentials in a [rc file](#rc-file) as described below.
 
 ### Rc file
 The rc file must contain the `credential` key with the google authentication token created previously. You can add any other spreadstream options (see `spreadstream --help`). The location of the rc file depend on your needs: either at a [standard rc file path](https://www.npmjs.com/package/rc) or specified using the `--settings` option.
@@ -57,10 +52,16 @@ The rc file must contain the `credential` key with the google authentication tok
 {
   // Your google authentication token created previously:
   "credential": {
-    "access_token": "xx",
-    "expires_in": 3600,
-    "refresh_token":"xx",
-    "token_type":"Bearer"
+    "type": "service_account",
+    "project_id": "xxxxx",
+    "private_key_id": "xxxxx",
+    "private_key": "xxxxx",
+    "client_email": "xxxxx@xxxxx",
+    "client_id": "xxxxx",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://accounts.google.com/o/oauth2/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/xxxxx"
   },
   // You can set default value for any spreadstream command line options...
   "id": "spreadsheet id", // The document id from the spreadsheet url
@@ -251,24 +252,69 @@ spreadstream.readDocument(config).then(values => console.log(values))
 
 1. Go to the [Google Developers Console](https://console.developers.google.com/project)
 2. Select your project or create a new one (and then select it)
-3. Enable the Drive API for your project
-   - Search for "drive"
+3. Enable the Google Sheets API for your project
+   - Search for "sheet"
    - In the sidebar on the left, expand __APIs & auth__ > __APIs__
    - Click on "[Google Sheets API](https://console.developers.google.com/apis/api/sheets.googleapis.com/overview)"
    - Click the blue "Enable API" button
 4. Create a service account for your project
    - In the sidebar on the left, expand __APIs & auth__ > __Credentials__
-   - Click blue "Add credentials" button
+   - Click blue "Create credentials" button
    - Select the "Create service account key" option
    - Select "New service account"
    - Keep the "JSON" key type option selected
    - Click blue "Create" button and complete the form
    - Your JSON key file is generated and downloaded to your machine
      (__it is the only copy!__)
-   - Note your service account's email address (also available in the JSON
+   - Note your service account's *email address* (also available in the JSON
      key file)
-5. Share the doc (or docs) with your service account using the email
+5. Add the content of the JSON file in your spreadstream rc file (eg. `./.spreadstreamrc` or `~/.config/spreadstream/config`):
+   ```json
+   {
+     "credential": {
+        "type": "service_account",
+        "project_id": "xxxxx",
+        "private_key_id": "xxxxx",
+        "private_key": "xxxxx",
+        "client_email": "xxxxx@xxxxx",
+        "client_id": "xxxxx",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://accounts.google.com/o/oauth2/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/xxxxx"
+      }
+   }
+   ```
+6. Share the doc (or docs) with your service account using the email
    noted above
+
+## Create Oauth2 token
+
+1. Go to the [Google Developers Console](https://console.developers.google.com/project)
+2. Select your project or create a new one (and then select it)
+3. Enable the Google Sheets API for your project
+   - Search for "sheet"
+   - In the sidebar on the left, expand __APIs & auth__ > __APIs__
+   - Click on "[Google Sheets API](https://console.developers.google.com/apis/api/sheets.googleapis.com/overview)"
+   - Click the blue "Enable API" button
+4. Create a Oauth credential
+   - In the sidebar on the left, expand __APIs & auth__ > __Credentials__
+   - Click blue "Create credentials" button
+   - Select the "OAuth 2.0 client IDs" option
+   - Select "Other" and give a name
+   - Click blue "Create" button
+   - Copy the client id (`CLIENT_ID` below) and the secret key (`CLIENT_SECRET` below)
+5. Edit you spreadstream rc file (eg. `~/.config/spreadstream/config`):
+   ```json
+   {
+     "type": "oauth2",
+     "client_id": "CLIENT_ID",
+     "client_secret": "CLIENT_SECRET",
+     "tokens": { }
+   }
+   ```
+6. Complete the
+
 
 *(credit: [node-google-spreadsheet]( https://github.com/theoephraim/node-google-spreadsheet/blob/master/README.md#service-account-recommended-method))*
 

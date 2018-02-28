@@ -10,6 +10,7 @@ const csvWriter = require('csv-write-stream')
 const ndjson = require('ndjson')
 const miss = require('mississippi')
 const { fromCallback } = require('bluebird')
+const initializer = require('../lib/initializer')
 
 const enums = spreadstream.enums
 
@@ -21,95 +22,99 @@ const argv = yargs
   .config('settings', function (configPath) {
     return JSON.parse(fs.readFileSync(configPath, 'utf-8'))
   })
-  .option('id', {
-    type: 'string',
-    required: true,
-    alias: ['spreadsheet-id'],
-    description: 'Identifier of the spreadsheet document'
+  .command('*', 'Default command', function (yargs) {
+    return yargs
+      .option('id', {
+        type: 'string',
+        required: true,
+        alias: ['spreadsheet-id'],
+        description: 'Identifier of the spreadsheet document'
+      })
+      .option('sheet', {
+        type: 'string',
+        required: true,
+        alias: 's',
+        description: 'Title of the document sheet'
+      })
+      .option('replace', {
+        type: 'boolean',
+        description: 'Replace data in the sheet (clear all values in the sheet)'
+      })
+      .option('verbose', {
+        type: 'boolean',
+        default: false,
+        description: 'Print some informations'
+      })
+      .option('value-input-option', {
+        type: 'string',
+        choices: Object.values(enums.valueInput),
+        description: 'Determines how input data should be interpreted'
+      })
+      .option('major-dimension', {
+        type: 'string',
+        choices: Object.values(enums.majorDimension),
+        description: 'Indicates which dimension read operation should apply to'
+      })
+      .option('value-render', {
+        type: 'string',
+        choices: Object.values(enums.valueRender),
+        description: 'Determines how values should be rendered in the the output while reading'
+      })
+      .option('date-time-render', {
+        type: 'string',
+        default: enums.dateTimeRender.SERIAL_NUMBER,
+        choices: Object.values(enums.dateTimeRender),
+        description: 'Determines how dates should be rendered in the the output while reading'
+      })
+      .option('max-buffer', {
+        type: 'number',
+        default: 10000,
+        description: 'Buffer max size before flushing to spreadsheet'
+      })
+      .option('range', {
+        type: 'string',
+        description: 'The A1 notation of the values to retrieve (for reading). Default is all the sheet.'
+      })
+      .option('csv-separator', {
+        type: 'string',
+        description: 'Csv parser: optional separator'
+      })
+      .option('csv-quote', {
+        type: 'string',
+        description: 'Csv parser: optional quote character'
+      })
+      .option('csv-escape', {
+        type: 'string',
+        description: 'Csv parser: optional quote escape (default to quote character)'
+      })
+      .option('csv-newline', {
+        type: 'string',
+        description: 'Csv parser: optional new line'
+      })
+      .option('headers', {
+        type: 'array',
+        description: 'Restrict headers (repeatable)'
+      })
+      .option('json', {
+        type: 'boolean',
+        default: false,
+        description: 'Input / output format should use json'
+      })
+      .option('input', {
+        type: 'string',
+        description: 'Input file to stream to sheet instead of stdin. `-` force reading from stdin (imply writing mode)'
+      })
+      .option('output', {
+        type: 'string',
+        description: 'Output file to stream sheet data to. `-` force writing to stdout (imply reading mode)'
+      })
   })
-  .option('sheet', {
-    type: 'string',
-    required: true,
-    alias: 's',
-    description: 'Title of the document sheet'
-  })
-  .option('replace', {
-    type: 'boolean',
-    description: 'Replace data in the sheet (clear all values in the sheet)'
-  })
-  .option('verbose', {
-    type: 'boolean',
-    default: false,
-    description: 'Print some informations'
-  })
-  .option('value-input-option', {
-    type: 'string',
-    choices: Object.values(enums.valueInput),
-    description: 'Determines how input data should be interpreted'
-  })
-  .option('major-dimension', {
-    type: 'string',
-    choices: Object.values(enums.majorDimension),
-    description: 'Indicates which dimension read operation should apply to'
-  })
-  .option('value-render', {
-    type: 'string',
-    choices: Object.values(enums.valueRender),
-    description: 'Determines how values should be rendered in the the output while reading'
-  })
-  .option('date-time-render', {
-    type: 'string',
-    default: enums.dateTimeRender.SERIAL_NUMBER,
-    choices: Object.values(enums.dateTimeRender),
-    description: 'Determines how dates should be rendered in the the output while reading'
-  })
-  .option('max-buffer', {
-    type: 'number',
-    default: 10000,
-    description: 'Buffer max size before flushing to spreadsheet'
-  })
-  .option('range', {
-    type: 'string',
-    description: 'The A1 notation of the values to retrieve (for reading). Default is all the sheet.'
-  })
-  .option('csv-separator', {
-    type: 'string',
-    description: 'Csv parser: optional separator'
-  })
-  .option('csv-quote', {
-    type: 'string',
-    description: 'Csv parser: optional quote character'
-  })
-  .option('csv-escape', {
-    type: 'string',
-    description: 'Csv parser: optional quote escape (default to quote character)'
-  })
-  .option('csv-newline', {
-    type: 'string',
-    description: 'Csv parser: optional new line'
-  })
-  .option('headers', {
-    type: 'array',
-    description: 'Restrict headers (repeatable)'
-  })
-  .option('json', {
-    type: 'boolean',
-    default: false,
-    description: 'Input / output format should use json'
-  })
-  .option('input', {
-    type: 'string',
-    description: 'Input file to stream to sheet instead of stdin. `-` force reading from stdin (imply writing mode)'
-  })
-  .option('output', {
-    type: 'string',
-    description: 'Output file to stream sheet data to. `-` force writing to stdout (imply reading mode)'
-  })
+  .command('init', 'Interactive spreadstream rc file initializer', () => {}, initializer)
   .completion('completion')
   // .epilogue(fs.readFileSync(path.resolve(__dirname, './epilogue.txt'), 'utf-8'))
   .parse()
 
-if (!argv.credential || (argv.credential.type !== 'service_account')) {
+if (!argv.credential || !argv.credential.type) {
   console.error('Missing google service account credential. Provide by option or rc file. See --help for more informations.')
   process.exit(1)
 }

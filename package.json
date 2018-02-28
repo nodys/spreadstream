@@ -39,6 +39,7 @@
     "csv-write-stream": "^2.0.0",
     "google-auth-library": "^1.2.1",
     "googleapis": "^26.0.1",
+    "inquirer": "^5.1.0",
     "mississippi": "^2.0.0",
     "ndjson": "^1.5.0",
     "path": "^0.12.7",
