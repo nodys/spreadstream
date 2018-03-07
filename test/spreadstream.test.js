@@ -31,10 +31,6 @@ describe('spreadstream', function () {
   })
 
   describe('spreadstream()', function () {
-    it('should break on missing config', () => {
-      expect(() => spreadstream()).to.throw('Cannot read property')
-    })
-
     it('should break on missing document id', () => {
       expect(() => spreadstream({})).to.throw('Missing required config: spreadsheet id')
     })
@@ -92,7 +88,7 @@ describe('spreadstream', function () {
       expect(mocked.values.clear).to.be.eql([])
     })
 
-    it('should limit data according to header list (only with object stream)', async () => {
+    it.skip('should limit data according to header list (only with object stream) (removed in v2)', async () => {
       const stream = spreadstream({ ...defconf, headers: ['bar'] })
       stream.write({ foo: 24, bar: 42 })
       stream.end()
@@ -143,6 +139,62 @@ describe('spreadstream', function () {
           properties: { title: 'test', gridProperties: { rowCount: 1, columnCount: 1 } }
         }}, 'should add header if the sheet does not exists (and replace is false)')
     })
+
+    describe('Option readHeaders and writeHeaders', function () {
+      it('readHeaders === false the first line in the input source is not treated as headers, and generic headers are generated', async () => {
+        const stream = spreadstream({ ...defconf, readHeaders: false })
+        spreadstream.google.sheets.spreadsheets.get = ({ spreadsheetId }, done) => {
+          done(null, {
+            data: {
+              spreadsheetId,
+              sheets: [ ]
+            }
+          })
+        }
+        stream.write([1, 2])
+        stream.end()
+        await fromCallback(cb => miss.finished(stream, cb))
+        expect(mocked.values.append[0].resource.values).to.eql([ [ 'A', 'B' ], [ 1, 2 ] ])
+      })
+      it('readHeaders === false + writeHeaders === false', async () => {
+        const stream = spreadstream({ ...defconf, readHeaders: false, writeHeaders: false })
+        spreadstream.google.sheets.spreadsheets.get = ({ spreadsheetId }, done) => {
+          done(null, {
+            data: {
+              spreadsheetId,
+              sheets: [ ]
+            }
+          })
+        }
+        stream.write(['foo', 'bar'])
+        stream.write([24, 42])
+        stream.end()
+        await fromCallback(cb => miss.finished(stream, cb))
+        expect(mocked.values.append[0].resource.values).to.eql([ [ 'foo', 'bar' ], [ 24, 42 ] ])
+      })
+
+      it('readHeaders === false with object stream', async () => {
+        const stream = spreadstream({ ...defconf, readHeaders: false })
+        spreadstream.google.sheets.spreadsheets.get = ({ spreadsheetId }, done) => {
+          done(null, {
+            data: {
+              spreadsheetId,
+              sheets: [ ]
+            }
+          })
+        }
+        stream.write({ foo: 24, bar: 42 })
+        stream.end()
+        await fromCallback(cb => miss.finished(stream, cb))
+        expect(mocked.values.append[0].resource.values).to.eql([ [ 'foo', 'bar' ], [ 24, 42 ] ])
+      })
+
+      it('options noheaders === false is an alias for readHeaders=writeHeaders=false', async () => {
+        let config = spreadstream._normalizeConfig({ noheaders: true })
+        expect(config).to.have.property('writeHeaders', false)
+        expect(config).to.have.property('readHeaders', false)
+      })
+    })
   })
 
   describe('spreadstream.readDocument()', function () {
@@ -164,6 +216,14 @@ describe('spreadstream', function () {
         .get = (_, done) => done(new Error('Not found'))
       let result = await spreadstream.readDocument({ ...defconf, range: 'A1:B2' })
       expect(result).to.eql([ ])
+    })
+
+    describe('Option readHeaders and writeHeaders', function () {
+      it('readHeaders === false the first line in the sheet is not treated as headers, and generic headers are generated', async () => {
+        let result = await spreadstream.readDocument({ ...defconf, readHeaders: false })
+        expect(mocked.values.get).to.have.length(1)
+        expect(result).to.eql([ ['A', 'B'], [ 'foo', 'bar' ], [ 24, 42 ] ])
+      })
     })
   })
 })
