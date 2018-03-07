@@ -16,7 +16,7 @@ const enums = spreadstream.enums
 
 const APPNAME = path.basename(__filename, path.extname(__filename))
 const config = rc(APPNAME, {})
-const argv = yargs
+yargs
   .usage(`${APPNAME} [options]`)
   .config(config)
   .config('settings', function (configPath) {
