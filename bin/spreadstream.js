@@ -88,6 +88,11 @@ const argv = yargs
     type: 'string',
     description: 'Csv parser: optional new line'
   })
+  .option('csv-send-headers', {
+    type: 'boolean',
+    default: true,
+    description: 'Csv writer: output headers (use --no-csv-send-headers to disable)'
+  })
   .option('headers', {
     type: 'array',
     description: 'Restrict headers (repeatable)'
@@ -109,7 +114,7 @@ const argv = yargs
   // .epilogue(fs.readFileSync(path.resolve(__dirname, './epilogue.txt'), 'utf-8'))
   .parse()
 
-if (!argv.credential || (argv.credential.type !== 'service_account')) {
+if (!argv.credential || !argv.credential.type) {
   console.error('Missing google service account credential. Provide by option or rc file. See --help for more informations.')
   process.exit(1)
 }
@@ -120,7 +125,8 @@ const csvOptions = {
   quote: argv['csv-quote'],
   escape: argv['csv-escape'],
   newline: argv['csv-newline'],
-  headers: argv['headers']
+  headers: argv['headers'],
+  sendHeaders: argv['csv-send-headers']
 }
 
 // Reading or writing ?
@@ -165,7 +171,6 @@ async function doRead (config) {
   const headers = argv.headers || firstRow
 
   let rows
-  csvOptions.sendHeaders = true
 
   if (!values.length && !argv.json) {
     // Output only headers
