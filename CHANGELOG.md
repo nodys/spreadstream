@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.2.0"></a>
+# [1.2.0](https://github.com/nodys/spreadstream/compare/v1.1.0...v1.2.0) (2018-03-07)
+
+
+### Features
+
+* Add option to disable csv header output ([91f189b](https://github.com/nodys/spreadstream/commit/91f189b))
+
+
+
 <a name="1.1.0"></a>
 # [1.1.0](https://github.com/nodys/spreadstream/compare/v1.0.3...v1.1.0) (2018-02-20)
 
