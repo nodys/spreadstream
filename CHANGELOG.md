@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="2.0.0"></a>
+# [2.0.0](https://github.com/nodys/spreadstream/compare/v1.2.0...v2.0.0) (2018-03-07)
+
+
+### Features
+
+* **headers:** Add new headers options ([8dc1562](https://github.com/nodys/spreadstream/commit/8dc1562))
+
+
+### BREAKING CHANGES
+
+* **headers:** the `--headers` option has been removed
+
+
+
 <a name="1.2.0"></a>
 # [1.2.0](https://github.com/nodys/spreadstream/compare/v1.1.0...v1.2.0) (2018-03-07)
 
