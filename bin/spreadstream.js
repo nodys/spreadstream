@@ -119,122 +119,124 @@ const argv = yargs
         type: 'string',
         description: 'Output file to stream sheet data to. `-` force writing to stdout (imply reading mode)'
       })
-  })
+  }, defaultAction)
   .command('init', 'Interactive spreadstream rc file initializer', () => {}, initializer)
   .completion('completion')
   // .epilogue(fs.readFileSync(path.resolve(__dirname, './epilogue.txt'), 'utf-8'))
   .parse()
 
-if (!argv.credential || !argv.credential.type) {
-  console.error('Missing google service account credential. Provide by option or rc file. See --help for more informations.')
-  process.exit(1)
-}
+function defaultAction (argv) {
+  if (!argv.credential || !argv.credential.type) {
+    console.error('Missing google service account credential. Provide by option or rc file. See --help for more informations.')
+    process.exit(1)
+  }
 
-if (argv.noheaders === true) {
-  argv['write-headers'] = argv['writeHeaders'] = false
-  argv['read-headers'] = argv['readHeaders'] = false
-}
+  if (argv.noheaders === true) {
+    argv['write-headers'] = argv['writeHeaders'] = false
+    argv['read-headers'] = argv['readHeaders'] = false
+  }
 
-// Shared csv options:
-argv.csvOptions = {
-  separator: argv['csv-separator'],
-  quote: argv['csv-quote'],
-  escape: argv['csv-escape'],
-  newline: argv['csv-newline'],
-  sendHeaders: argv['write-headers']
-}
+  // Shared csv options:
+  argv.csvOptions = {
+    separator: argv['csv-separator'],
+    quote: argv['csv-quote'],
+    escape: argv['csv-escape'],
+    newline: argv['csv-newline'],
+    sendHeaders: argv['write-headers']
+  }
 
-// Reading or writing ?
-if (argv.output) {
-  argv.mode = enums.mode.READING
-} else if (argv.input) {
-  argv.mode = enums.mode.WRITING
-} else {
-  // Writing sheet from stdin if process is not a TTY
-  argv.mode = process.stdin.isTTY
-    ? enums.mode.READING
-    : enums.mode.WRITING
-}
-
-// Handle errors
-function handleError (error) {
-  if (argv.verbose) {
-    console.error(error.stack)
+  // Reading or writing ?
+  if (argv.output) {
+    argv.mode = enums.mode.READING
+  } else if (argv.input) {
+    argv.mode = enums.mode.WRITING
   } else {
-    console.error('Error:', error.message, '(see --verbose for more)')
-  }
-  process.exit(1)
-}
-
-/**
- * Execute the read command
- * @param  {Object} config
- * @return {Promise}
- */
-async function doRead (config) {
-  const outputStream = config.output && config.output !== '-'
-    ? fs.createWriteStream(config.output)
-    : process.stdout
-
-  const csvOptions = {
-    ...config.csvOptions
+    // Writing sheet from stdin if process is not a TTY
+    argv.mode = process.stdin.isTTY
+      ? enums.mode.READING
+      : enums.mode.WRITING
   }
 
-  // Read sheet values
-  let values = await spreadstream.readDocument(argv)
-
-  // Empty or the sheet does not exists
-  if (!values.length) { return }
-
-  const headers = values.shift()
-
-  let rows
-
-  if (!values.length && !argv.json) {
-    // Output only headers
-    csvOptions.sendHeaders = false
-    values.push(headers)
+  // Handle errors
+  function handleError (error) {
+    if (argv.verbose) {
+      console.error(error.stack)
+    } else {
+      console.error('Error:', error.message, '(see --verbose for more)')
+    }
+    process.exit(1)
   }
 
-  rows = values.map(row => {
-    return headers.reduce((memo, value, index) => {
-      memo[value] = row[index]
-      return memo
-    }, {})
-  })
+  /**
+   * Execute the read command
+   * @param  {Object} config
+   * @return {Promise}
+   */
+  async function doRead (config) {
+    const outputStream = config.output && config.output !== '-'
+      ? fs.createWriteStream(config.output)
+      : process.stdout
 
-  const serializer = argv.json ? ndjson.serialize() : csvWriter(csvOptions)
+    const csvOptions = {
+      ...config.csvOptions
+    }
 
-  miss.from.obj(rows)
-    .pipe(serializer)
-    .pipe(outputStream)
-}
+    // Read sheet values
+    let values = await spreadstream.readDocument(argv)
 
-/**
- * Execute a the write command
- * @param  {Object} config
- * @return {Promise}
- */
-async function doWrite (config) {
-  const inputStream = config.input && config.input !== '-'
-    ? fs.createReadStream(config.input)
-    : process.stdin
+    // Empty or the sheet does not exists
+    if (!values.length) { return }
 
-  const csvOptions = {
-    ...config.csvOptions,
-    // csv-parse does not use the same option keys than csv-write-stream or csv-parser:
-    delimiter: config.csvOptions.separator,
-    rowDelimiter: config.csvOptions.newline
+    const headers = values.shift()
+
+    let rows
+
+    if (!values.length && !argv.json) {
+      // Output only headers
+      csvOptions.sendHeaders = false
+      values.push(headers)
+    }
+
+    rows = values.map(row => {
+      return headers.reduce((memo, value, index) => {
+        memo[value] = row[index]
+        return memo
+      }, {})
+    })
+
+    const serializer = argv.json ? ndjson.serialize() : csvWriter(csvOptions)
+
+    miss.from.obj(rows)
+      .pipe(serializer)
+      .pipe(outputStream)
   }
 
-  const parser = argv.json ? ndjson.parse() : csvParse(csvOptions)
-  const outputStream = spreadstream(argv)
+  /**
+   * Execute a the write command
+   * @param  {Object} config
+   * @return {Promise}
+   */
+  async function doWrite (config) {
+    const inputStream = config.input && config.input !== '-'
+      ? fs.createReadStream(config.input)
+      : process.stdin
 
-  return fromCallback(cb => miss.pipe(inputStream, parser, outputStream, cb))
-}
+    const csvOptions = {
+      ...config.csvOptions,
+      // csv-parse does not use the same option keys than csv-write-stream or csv-parser:
+      delimiter: config.csvOptions.separator,
+      rowDelimiter: config.csvOptions.newline
+    }
 
-if (argv.mode === enums.mode.READING) {
-  doRead(argv).catch(handleError)
-} else {
-  doWrite(argv).catch(handleError)
+    const parser = argv.json ? ndjson.parse() : csvParse(csvOptions)
+    const outputStream = spreadstream(argv)
+
+    return fromCallback(cb => miss.pipe(inputStream, parser, outputStream, cb))
+  }
+
+  if (argv.mode === enums.mode.READING) {
+    doRead(argv).catch(handleError)
+  } else {
+    doWrite(argv).catch(handleError)
+  }
 }
