@@ -5,7 +5,7 @@ const path = require('path')
 const rc = require('rc')
 const fs = require('fs')
 const spreadstream = require('../lib/spreadstream')
-const csvParser = require('csv-parser')
+const csvParse = require('csv-parse')
 const csvWriter = require('csv-write-stream')
 const ndjson = require('ndjson')
 const miss = require('mississippi')
@@ -88,14 +88,20 @@ const argv = yargs
     type: 'string',
     description: 'Csv parser: optional new line'
   })
-  .option('csv-send-headers', {
+  .option('read-headers', {
     type: 'boolean',
     default: true,
-    description: 'Csv writer: output headers (use --no-csv-send-headers to disable)'
+    description: 'The first chunk in the input feed should be used as headers (prefix with --no- to disable)'
   })
-  .option('headers', {
-    type: 'array',
-    description: 'Restrict headers (repeatable)'
+  .option('write-headers', {
+    type: 'boolean',
+    default: true,
+    alias: ['csv-send-headers'],
+    description: 'The first chunk in the output feed should include headers (prefix with --no- to disable)'
+  })
+  .option('noheaders', {
+    type: 'boolean',
+    description: 'If enabled, alias for --no-write-headers and --no-read-headers'
   })
   .option('json', {
     type: 'boolean',
@@ -119,14 +125,18 @@ if (!argv.credential || !argv.credential.type) {
   process.exit(1)
 }
 
-// Read csv options:
-const csvOptions = {
+if (argv.noheaders === true) {
+  argv['write-headers'] = argv['writeHeaders'] = false
+  argv['read-headers'] = argv['readHeaders'] = false
+}
+
+// Shared csv options:
+argv.csvOptions = {
   separator: argv['csv-separator'],
   quote: argv['csv-quote'],
   escape: argv['csv-escape'],
   newline: argv['csv-newline'],
-  headers: argv['headers'],
-  sendHeaders: argv['csv-send-headers']
+  sendHeaders: argv['write-headers']
 }
 
 // Reading or writing ?
@@ -152,7 +162,7 @@ function handleError (error) {
 }
 
 /**
- * Execute a the read command
+ * Execute the read command
  * @param  {Object} config
  * @return {Promise}
  */
@@ -161,14 +171,17 @@ async function doRead (config) {
     ? fs.createWriteStream(config.output)
     : process.stdout
 
+  const csvOptions = {
+    ...config.csvOptions
+  }
+
   // Read sheet values
   let values = await spreadstream.readDocument(argv)
 
   // Empty or the sheet does not exists
   if (!values.length) { return }
 
-  const firstRow = values.shift()
-  const headers = argv.headers || firstRow
+  const headers = values.shift()
 
   let rows
 
@@ -179,10 +192,8 @@ async function doRead (config) {
   }
 
   rows = values.map(row => {
-    return firstRow.reduce((memo, value, index) => {
-      if (headers.includes(value)) {
-        memo[value] = row[index]
-      }
+    return headers.reduce((memo, value, index) => {
+      memo[value] = row[index]
       return memo
     }, {})
   })
@@ -204,7 +215,14 @@ async function doWrite (config) {
     ? fs.createReadStream(config.input)
     : process.stdin
 
-  const parser = argv.json ? ndjson.parse() : csvParser(csvOptions)
+  const csvOptions = {
+    ...config.csvOptions,
+    // csv-parse does not use the same option keys than csv-write-stream or csv-parser:
+    delimiter: config.csvOptions.separator,
+    rowDelimiter: config.csvOptions.newline
+  }
+
+  const parser = argv.json ? ndjson.parse() : csvParse(csvOptions)
   const outputStream = spreadstream(argv)
 
   return fromCallback(cb => miss.pipe(inputStream, parser, outputStream, cb))

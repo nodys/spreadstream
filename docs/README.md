@@ -162,6 +162,20 @@ The [API](#api) use the camelCase version for the dashed options names. Every op
 - `--csv-newline`
    Csv new line character
    Default to auto-detect and `\n`
+- `--read-headers` (default: true)
+  The first chunk in the input feed should be used as headers (prefix with `--no-` to disable)
+  If false:
+  - When reading from json, this option has no effect.
+  - When reading from csv, the first line is not interpreted as headers (and default headers are generated)
+  - When reading from spreadsheet, the first line is not interpreted as headers (and default headers are generated)
+- `--write-headers` (default: true)
+  The first chunk in the output feed should include headers
+  If false:
+  - When writing to json, this option has no effect.
+  - When writing to csv the headers are omitted
+  - When writing to spreadsheet the headers are omitted
+- `--noheaders` (default: false)
+  Alias for `--no-read-headers` and `--no-write-headers`
 - `--json`
    Use [new line delimited json](http://ndjson.org/) parser and writer instead of csv as input and output.
 - `--input`
@@ -206,10 +220,7 @@ const config = {
   maxBuffer: 5000,
 
   // Verbose mode (default: false)
-  verbose: false,
-
-  // Force (and restrict) headers
-  //headers: ['foo', 'bar']
+  verbose: false
 }
 
 // Create a stream
@@ -220,8 +231,8 @@ const stream = spreadstream(config)
 // Note that you can not push a mixed stream of array and object.
 
 // Stream of Array:
-// Each array is a row in the sheet. The first row must contain
-// the headers (either when the config `headers` option is provided)
+// Each array is a row in the sheet. The first row will be interpreted has
+// headers (unless readHeaders if false)
 const stream1 = spreadstream(config)
 stream1.write(['foo', 'bar'])
 stream1.write(['4', '2'])
@@ -230,7 +241,6 @@ stream1.end()
 
 
 // Stream of Object
-// The first row must not contain the headers (the object keys will be used)
 const stream2 = spreadstream(config)
 stream2.write({ foo: 4, bar: 2 })
 stream2.write({ foo: 7, bar: 10 })
