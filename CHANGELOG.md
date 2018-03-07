@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="2.1.0"></a>
+# [2.1.0](https://github.com/nodys/spreadstream/compare/v2.0.0...v2.1.0) (2018-03-07)
+
+
+### Bug Fixes
+
+* **standard:** Fix style ([e469b2d](https://github.com/nodys/spreadstream/commit/e469b2d))
+
+
+### Features
+
+* Add spreadstream init tool ([3287401](https://github.com/nodys/spreadstream/commit/3287401))
+
+
+
 <a name="2.0.0"></a>
 # [2.0.0](https://github.com/nodys/spreadstream/compare/v1.2.0...v2.0.0) (2018-03-07)
 
