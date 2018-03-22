@@ -211,10 +211,10 @@ describe('spreadstream', function () {
       expect(result).to.eql([ [ 'foo', 'bar' ], [ 24, 42 ] ])
     })
 
-    it('should loosly support unreadable sheet (returning empty set)', async () => {
+    it('should loosly support unreadable sheet when the graceful is on (returning empty set)', async () => {
       spreadstream.google.sheets.spreadsheets.values
         .get = (_, done) => done(new Error('Not found'))
-      let result = await spreadstream.readDocument({ ...defconf, range: 'A1:B2' })
+      let result = await spreadstream.readDocument({ ...defconf, graceful: true, range: 'A1:B2' })
       expect(result).to.eql([ ])
     })
 
