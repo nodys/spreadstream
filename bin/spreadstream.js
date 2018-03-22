@@ -119,6 +119,11 @@ yargs
         default: false,
         description: 'Input / output format should use classic json serializer (array of json)'
       })
+      .option('json-raw', {
+        type: 'boolean',
+        default: false,
+        description: 'Keep raw values in json output while reading: do not try to parse boolean and numbers (use only string values)'
+      })
       .option('input', {
         type: 'string',
         description: 'Input file to stream to sheet instead of stdin. `-` force reading from stdin (imply writing mode)'
