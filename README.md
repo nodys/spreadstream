@@ -179,6 +179,8 @@ The [API](#api) use the camelCase version for the dashed options names. Every op
   Alias for `--no-read-headers` and `--no-write-headers`
 - `--json`
    Use [new line delimited json](http://ndjson.org/) parser and writer instead of csv as input and output.
+- `--classic-json`
+   Input / output format should use classic json serializer and parser instead of line delimited json (read and produce a json array)
 - `--input`
    Set input file. Default is to read from stdin outside of a tty environment.
    Reading from stdin can be forced by setting this option to `-`.

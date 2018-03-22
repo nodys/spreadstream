@@ -109,7 +109,12 @@ yargs
       .option('json', {
         type: 'boolean',
         default: false,
-        description: 'Input / output format should use json'
+        description: 'Input / output format should use line delemited json (one line = one json)'
+      })
+      .option('classic-json', {
+        type: 'boolean',
+        default: false,
+        description: 'Input / output format should use classic json serializer (array of json)'
       })
       .option('input', {
         type: 'string',
@@ -204,7 +209,15 @@ function defaultAction (argv) {
       }, {})
     })
 
-    const serializer = argv.json ? ndjson.serialize() : csvWriter(csvOptions)
+    let serializer
+
+    if (argv.classicJson) {
+      serializer = classicJsonOutputStream()
+    } else if (argv.json) {
+      serializer = ndjson.serialize()
+    } else {
+      serializer = csvWriter(csvOptions)
+    }
 
     miss.from.obj(rows)
       .pipe(serializer)
@@ -228,10 +241,70 @@ function defaultAction (argv) {
       rowDelimiter: config.csvOptions.newline
     }
 
-    const parser = argv.json ? ndjson.parse() : csvParse(csvOptions)
+    let parser
+
+    if (argv.classicJson) {
+      parser = classicJsonInputStream()
+    } else if (argv.json) {
+      parser = ndjson.serialize()
+    } else {
+      parser = csvParse(csvOptions)
+    }
     const outputStream = spreadstream(argv)
 
     return fromCallback(cb => miss.pipe(inputStream, parser, outputStream, cb))
+  }
+
+  /**
+   * Create a classic json output stream (write a json array)
+   * @return {stream.Passthrough}
+   */
+  function classicJsonOutputStream (replacer = null, space = 2) {
+    let first = true
+    return miss.through.obj(function (data, enc, next) {
+      let chunk = ''
+      if (first) {
+        chunk = '[\n'
+      }
+      if (!first) {
+        chunk += ',\n'
+      }
+      chunk += JSON.stringify(data, replacer, space).split('\n').map(r => `  ${r}`).join('\n')
+      if (first) {
+        first = false
+      }
+      this.push(chunk)
+      next()
+    }, function (done) {
+      this.push('\n]\n')
+      done()
+    })
+  }
+
+  /**
+   * Create a classic json input stream (read a json array)
+   * @return {stream.Passthrough}
+   */
+  function classicJsonInputStream () {
+    let buffer = []
+    return miss.through.obj(function (chunk, enc, next) {
+      buffer.push(chunk.toString())
+      next()
+    }, function (done) {
+      let data
+      try {
+        data = JSON.parse(buffer.join(''))
+      } catch (error) {
+        throw new Error(`Invalid input type: unable to parse (original message: ${error.message})`)
+      }
+      if (!Array.isArray(data)) {
+        throw new Error('Invalid input type: array expected with classic json stream')
+      }
+      for (let row of data) {
+        this.push(row)
+      }
+      done()
+    })
   }
 
   if (argv.mode === enums.mode.READING) {
