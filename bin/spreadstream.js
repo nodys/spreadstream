@@ -124,6 +124,11 @@ yargs
         type: 'string',
         description: 'Output file to stream sheet data to. `-` force writing to stdout (imply reading mode)'
       })
+      .option('graceful', {
+        type: 'boolean',
+        default: false,
+        description: 'Gracefully ignore reading errors - just print a warning'
+      })
   }, defaultAction)
   .command('init', 'Interactive spreadstream rc file initializer', () => {}, initializer)
   .completion('completion')
