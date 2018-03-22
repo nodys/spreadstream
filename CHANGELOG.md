@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="3.0.0"></a>
+# [3.0.0](https://github.com/nodys/spreadstream/compare/v2.2.0...v3.0.0) (2018-03-22)
+
+
+### Bug Fixes
+
+* **option:** Normalize json-classic option ([2784fce](https://github.com/nodys/spreadstream/commit/2784fce))
+* **option:** Normalize value render option and value input option names ([995aa69](https://github.com/nodys/spreadstream/commit/995aa69))
+* **option:** Read properly valueInputOption ([36591f4](https://github.com/nodys/spreadstream/commit/36591f4))
+* **test:** Add the graceful option ([5621a01](https://github.com/nodys/spreadstream/commit/5621a01))
+
+
+### Features
+
+* **error:** Throw an error if the source sheet does not exists fix [#1](https://github.com/nodys/spreadstream/issues/1) ([5c7e098](https://github.com/nodys/spreadstream/commit/5c7e098))
+* **json:** Add value parser for json values for boolean and number ([fab795f](https://github.com/nodys/spreadstream/commit/fab795f))
+
+
+
 <a name="2.2.0"></a>
 # [2.2.0](https://github.com/nodys/spreadstream/compare/v2.1.0...v2.2.0) (2018-03-22)
 
