@@ -45,8 +45,9 @@ yargs
         default: false,
         description: 'Print some informations'
       })
-      .option('value-input-option', {
+      .option('value-input', {
         type: 'string',
+        alias: ['value-input-option'],
         choices: Object.values(enums.valueInputOption),
         description: 'Determines how input data should be interpreted'
       })
@@ -57,7 +58,8 @@ yargs
       })
       .option('value-render', {
         type: 'string',
-        choices: Object.values(enums.valueRender),
+        alias: ['value-render-option'],
+        choices: Object.values(enums.valueRenderOption),
         description: 'Determines how values should be rendered in the the output while reading'
       })
       .option('date-time-render', {
