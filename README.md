@@ -219,7 +219,7 @@ const config = {
   // - USER_ENTERED: The values will be parsed as if the user typed them into the UI (the default)
   // - RAW: The values will be stored as-is.
   // See https://developers.google.com/sheets/api/reference/rest/v4/ValueInputOption
-  valueInput: spreadstream.USER_ENTERED,
+  valueInputOption: spreadstream.USER_ENTERED,
 
   // How many row must be keept in the stream buffer before flushing
   // data to the document (default: 5000)

@@ -47,7 +47,7 @@ yargs
       })
       .option('value-input-option', {
         type: 'string',
-        choices: Object.values(enums.valueInput),
+        choices: Object.values(enums.valueInputOption),
         description: 'Determines how input data should be interpreted'
       })
       .option('major-dimension', {
@@ -196,7 +196,7 @@ function defaultAction (argv) {
 
     let rows
 
-    if (!values.length && !argv.json) {
+    if (!values.length && !argv.json && !argv.classicJson) {
       // Output only headers
       csvOptions.sendHeaders = false
       values.push(headers)
