@@ -42,6 +42,7 @@ You need to create a Google authentication token for the Google Sheet Api: eithe
 
 Once created, put your credentials in a [rc file](#rc-file) as described below.
 
+
 ### Rc file
 The rc file must contain the `credential` key with the google authentication token created previously. You can add any other spreadstream options (see `spreadstream --help`). The location of the rc file depend on your needs: either at a [standard rc file path](https://www.npmjs.com/package/rc) or specified using the `--settings` option.
 
