@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="2.2.0"></a>
+# [2.2.0](https://github.com/nodys/spreadstream/compare/v2.1.0...v2.2.0) (2018-03-22)
+
+
+### Bug Fixes
+
+* **init:** Fix typo in rc file output ([4730f37](https://github.com/nodys/spreadstream/commit/4730f37))
+
+
+### Features
+
+* **doc:** Add a notice about the init tool ([459fe50](https://github.com/nodys/spreadstream/commit/459fe50))
+* **stream:** Add new stream output --classic-json ([f76aa85](https://github.com/nodys/spreadstream/commit/f76aa85))
+
+
+
 <a name="2.1.0"></a>
 # [2.1.0](https://github.com/nodys/spreadstream/compare/v2.0.0...v2.1.0) (2018-03-07)
 
