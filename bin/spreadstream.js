@@ -113,8 +113,9 @@ yargs
         default: false,
         description: 'Input / output format should use line delemited json (one line = one json)'
       })
-      .option('classic-json', {
+      .option('json-classic', {
         type: 'boolean',
+        alias: ['classic-json'],
         default: false,
         description: 'Input / output format should use classic json serializer (array of json)'
       })
