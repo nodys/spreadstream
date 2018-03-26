@@ -201,14 +201,14 @@ describe('spreadstream', function () {
     it('should return a sheet content (full)', async () => {
       let result = await spreadstream.readDocument({ ...defconf })
       expect(mocked.values.get).to.have.length(1)
-      expect(result).to.eql([ [ 'foo', 'bar' ], [ 24, 42 ] ])
+      expect(result).to.eql([ [ 'foo', 'bar' ], [ 24, -0.01 ], [ true, false ] ])
     })
 
     it('should return a sheet content (range)', async () => {
       let result = await spreadstream.readDocument({ ...defconf, range: 'A1:B2' })
       expect(mocked.values.get).to.have.length(1)
       expect(mocked.values.get[0].range).to.eql(`'test'!A1:B2`)
-      expect(result).to.eql([ [ 'foo', 'bar' ], [ 24, 42 ] ])
+      expect(result).to.eql([ [ 'foo', 'bar' ], [ 24, -0.01 ], [ true, false ] ])
     })
 
     it('should loosly support unreadable sheet when the graceful is on (returning empty set)', async () => {
@@ -222,7 +222,7 @@ describe('spreadstream', function () {
       it('readHeaders === false the first line in the sheet is not treated as headers, and generic headers are generated', async () => {
         let result = await spreadstream.readDocument({ ...defconf, readHeaders: false })
         expect(mocked.values.get).to.have.length(1)
-        expect(result).to.eql([ ['A', 'B'], [ 'foo', 'bar' ], [ 24, 42 ] ])
+        expect(result).to.eql([ ['A', 'B'], [ 'foo', 'bar' ], [ 24, -0.01 ], [ true, false ] ])
       })
     })
   })
