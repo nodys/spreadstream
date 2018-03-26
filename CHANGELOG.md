@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="3.0.1"></a>
+## [3.0.1](https://github.com/nodys/spreadstream/compare/v3.0.0...v3.0.1) (2018-03-26)
+
+
+### Bug Fixes
+
+* **json:** Invalid boolean parser ([aaa99bd](https://github.com/nodys/spreadstream/commit/aaa99bd))
+
+
+
 <a name="3.0.0"></a>
 # [3.0.0](https://github.com/nodys/spreadstream/compare/v2.2.0...v3.0.0) (2018-03-22)
 
