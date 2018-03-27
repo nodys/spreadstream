@@ -16,6 +16,18 @@ const { expect } = chai // eslint-disable-line no-unused-vars
 const spreadstream = require('..')
 const makeMock = require('./utils/mock-google-sheets.js')
 
+/**
+ * Stream form string
+ */
+function fromString (string) {
+  return miss.from(function (size, next) {
+    if (string.length <= 0) return next(null, null)
+    var chunk = string.slice(0, size)
+    string = string.slice(size)
+    next(null, chunk)
+  })
+}
+
 describe('spreadstream', function () {
   let mocked
   let defconf = {
@@ -223,6 +235,42 @@ describe('spreadstream', function () {
         let result = await spreadstream.readDocument({ ...defconf, readHeaders: false })
         expect(mocked.values.get).to.have.length(1)
         expect(result).to.eql([ ['A', 'B'], [ 'foo', 'bar' ], [ 24, -0.01 ], [ true, false ] ])
+      })
+    })
+  })
+
+  describe('spreadstream.streams', function () {
+    describe('classicJsonInputStream()', function () {
+      it('should parse classic json array input stream', async function () {
+        const stream = spreadstream.streams.classicJsonInputStream()
+        const result = await fromCallback(cb => fromString(`[{"foo": "bar", "bool": true}, { "bar": "foo", "bool": false } ]`)
+          .pipe(stream)
+          .pipe(miss.concat((result) => cb(null, result))))
+        expect(result).to.eql([ { foo: 'bar', bool: true }, { bar: 'foo', bool: false } ])
+      })
+
+      it('should throw error if the source is invalid json', async function () {
+        let promise = fromCallback(cb => miss.pipe(
+          fromString(`[{invalid: json}]`),
+          spreadstream.streams.classicJsonInputStream(), cb))
+        await expect(promise).to.be.rejectedWith('unable to parse')
+      })
+
+      it('should throw error if the source is not an array', async function () {
+        let promise = fromCallback(cb => miss.pipe(
+          fromString(`{"foo": "bar"}`),
+          spreadstream.streams.classicJsonInputStream(), cb))
+        await expect(promise).to.be.rejectedWith('array expected')
+      })
+    })
+
+    describe('classicJsonOutputStream()', function () {
+      it('should produce classic json array output stream', async function () {
+        const stream = spreadstream.streams.classicJsonOutputStream()
+        const result = await fromCallback(cb => miss.from.obj([ { foo: 'bar', bool: true }, { bar: 'foo', bool: false } ])
+          .pipe(stream)
+          .pipe(miss.concat((result) => cb(null, result))))
+        expect(result.trim()).to.eql(JSON.stringify([ { foo: 'bar', bool: true }, { bar: 'foo', bool: false } ], null, 2).trim())
       })
     })
   })

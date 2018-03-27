@@ -12,6 +12,7 @@ const miss = require('mississippi')
 const { fromCallback } = require('bluebird')
 const initializer = require('../lib/initializer')
 
+const streams = spreadstream.streams
 const enums = spreadstream.enums
 
 const APPNAME = path.basename(__filename, path.extname(__filename))
@@ -26,13 +27,13 @@ yargs
     return yargs
       .option('id', {
         type: 'string',
-        required: true,
+        // required: true,
         alias: ['spreadsheet-id'],
         description: 'Identifier of the spreadsheet document'
       })
       .option('sheet', {
         type: 'string',
-        required: true,
+        // required: true,
         alias: 's',
         description: 'Title of the document sheet'
       })
@@ -139,7 +140,7 @@ yargs
       })
   }, defaultAction)
   .command('init', 'Interactive spreadstream rc file initializer', () => {}, initializer)
-  .completion('completion')
+  .completion()
   // .epilogue(fs.readFileSync(path.resolve(__dirname, './epilogue.txt'), 'utf-8'))
   .parse()
 
@@ -225,7 +226,7 @@ function defaultAction (argv) {
     let serializer
 
     if (argv.classicJson) {
-      serializer = classicJsonOutputStream()
+      serializer = streams.classicJsonOutputStream()
     } else if (argv.json) {
       serializer = ndjson.serialize()
     } else {
@@ -257,7 +258,7 @@ function defaultAction (argv) {
     let parser
 
     if (argv.classicJson) {
-      parser = classicJsonInputStream()
+      parser = streams.classicJsonInputStream()
     } else if (argv.json) {
       parser = ndjson.serialize()
     } else {
@@ -266,58 +267,6 @@ function defaultAction (argv) {
     const outputStream = spreadstream(argv)
 
     return fromCallback(cb => miss.pipe(inputStream, parser, outputStream, cb))
-  }
-
-  /**
-   * Create a classic json output stream (write a json array)
-   * @return {stream.Passthrough}
-   */
-  function classicJsonOutputStream (replacer = null, space = 2) {
-    let first = true
-    return miss.through.obj(function (data, enc, next) {
-      let chunk = ''
-      if (first) {
-        chunk = '[\n'
-      }
-      if (!first) {
-        chunk += ',\n'
-      }
-      chunk += JSON.stringify(data, replacer, space).split('\n').map(r => `  ${r}`).join('\n')
-      if (first) {
-        first = false
-      }
-      this.push(chunk)
-      next()
-    }, function (done) {
-      this.push('\n]\n')
-      done()
-    })
-  }
-
-  /**
-   * Create a classic json input stream (read a json array)
-   * @return {stream.Passthrough}
-   */
-  function classicJsonInputStream () {
-    let buffer = []
-    return miss.through.obj(function (chunk, enc, next) {
-      buffer.push(chunk.toString())
-      next()
-    }, function (done) {
-      let data
-      try {
-        data = JSON.parse(buffer.join(''))
-      } catch (error) {
-        throw new Error(`Invalid input type: unable to parse (original message: ${error.message})`)
-      }
-      if (!Array.isArray(data)) {
-        throw new Error('Invalid input type: array expected with classic json stream')
-      }
-      for (let row of data) {
-        this.push(row)
-      }
-      done()
-    })
   }
 
   if (argv.mode === enums.mode.READING) {
