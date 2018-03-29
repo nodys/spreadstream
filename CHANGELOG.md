@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="3.1.2"></a>
+## [3.1.2](https://github.com/nodys/spreadstream/compare/v3.1.1...v3.1.2) (2018-03-29)
+
+
+### Bug Fixes
+
+* **json:** Empty cell should be converted to null ([930fb1a](https://github.com/nodys/spreadstream/commit/930fb1a))
+
+
+
 <a name="3.1.1"></a>
 ## [3.1.1](https://github.com/nodys/spreadstream/compare/v3.1.0...v3.1.1) (2018-03-29)
 
