@@ -36,7 +36,7 @@ function makeMock () {
       values: {
         get: (params, cb) => {
           mocked.values.get.push(params)
-          cb(null, { data: { values: [ [ 'foo', 'bar' ], [ '24', '-10E-3' ], [ 'TRUE', 'FALSE' ] ] } })
+          cb(null, { data: { values: [ [ 'foo', 'bar' ], [ '24', '-10E-3' ], [ 'TRUE', 'FALSE' ], [ '', '0' ] ] } })
         },
         clear: (data, cb) => {
           mocked.values.clear.push(data)
