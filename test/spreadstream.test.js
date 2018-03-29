@@ -272,6 +272,14 @@ describe('spreadstream', function () {
           .pipe(miss.concat((result) => cb(null, result))))
         expect(result.trim()).to.eql(JSON.stringify([ { foo: 'bar', bool: true }, { bar: 'foo', bool: false } ], null, 2).trim())
       })
+
+      it('should handle properly empty stream', async function () {
+        const stream = spreadstream.streams.classicJsonOutputStream()
+        const result = await fromCallback(cb => miss.from.obj([ ])
+          .pipe(stream)
+          .pipe(miss.concat((result) => cb(null, result))))
+        expect(result.trim()).to.eql('[]')
+      })
     })
   })
 })
