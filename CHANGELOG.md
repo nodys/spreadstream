@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="3.1.3"></a>
+## [3.1.3](https://github.com/nodys/spreadstream/compare/v3.1.2...v3.1.3) (2018-04-03)
+
+
+### Bug Fixes
+
+* Hnadle properly unformatted values ([9c86c4d](https://github.com/nodys/spreadstream/commit/9c86c4d))
+
+
+### Features
+
+* **json:** csvFieldToJson can now be configured ([c26753c](https://github.com/nodys/spreadstream/commit/c26753c))
+
+
+
 <a name="3.1.2"></a>
 ## [3.1.2](https://github.com/nodys/spreadstream/compare/v3.1.1...v3.1.2) (2018-03-29)
 
