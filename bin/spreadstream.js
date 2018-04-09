@@ -138,6 +138,13 @@ yargs
         default: false,
         description: 'Gracefully ignore reading errors - just print a warning'
       })
+      .option('transform-out', {
+        type: 'string',
+        description: 'Apply a the fonction exported by the selected node module to each output values (experimental)',
+        coerce: function (arg) {
+          return require(path.resolve(process.cwd(), arg))
+        }
+      })
   }, defaultAction)
   .command('init', 'Interactive spreadstream rc file initializer', () => {}, initializer)
   .completion()
@@ -222,6 +229,13 @@ function defaultAction (argv) {
         return memo
       }, {})
     })
+
+    // Experimental output transformation
+    if (argv.transformOut) {
+      for (let [index, row] of rows.entries()) {
+        rows[index] = await Promise.resolve(argv.transformOut(row, { index, rows, config }))
+      }
+    }
 
     let serializer
 
