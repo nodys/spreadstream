@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="3.2.0"></a>
+# [3.2.0](https://github.com/nodys/spreadstream/compare/v3.1.3...v3.2.0) (2018-04-09)
+
+
+### Features
+
+* Add experimental transform for output ([39d00e7](https://github.com/nodys/spreadstream/commit/39d00e7))
+
+
+
 <a name="3.1.3"></a>
 ## [3.1.3](https://github.com/nodys/spreadstream/compare/v3.1.2...v3.1.3) (2018-04-03)
 
