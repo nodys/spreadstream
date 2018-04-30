@@ -274,7 +274,7 @@ function defaultAction (argv) {
     if (argv.classicJson) {
       parser = streams.classicJsonInputStream()
     } else if (argv.json) {
-      parser = ndjson.serialize()
+      parser = ndjson.parse()
     } else {
       parser = csvParse(csvOptions)
     }
