@@ -172,9 +172,9 @@ function defaultAction (argv) {
   }
 
   // Reading or writing ?
-  if (argv.output) {
+  if (argv.output !== undefined) {
     argv.mode = enums.mode.READING
-  } else if (argv.input) {
+  } else if (argv.input !== undefined) {
     argv.mode = enums.mode.WRITING
   } else {
     // Writing sheet from stdin if process is not a TTY
