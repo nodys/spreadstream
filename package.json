@@ -38,8 +38,8 @@
     "csv-parse": "^4.8.8",
     "csv-write-stream": "^2.0.0",
     "fs-extra": "^7.0.0",
-    "google-auth-library": "^1.6.1",
-    "googleapis": "^48.0.0",
+    "google-auth-library": "^7.0.2",
+    "googleapis": "^67.1.1",
     "inquirer": "^6.0.0",
     "lodash": "^4.17.15",
     "mississippi": "^2.0.0",
@@ -55,7 +55,7 @@
     "mocha": "^7.2.0",
     "nyc": "^15.0.1",
     "standard": "^11.0.0",
-    "standard-version": "^8.0.0"
+    "standard-version": "^9.1.1"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
