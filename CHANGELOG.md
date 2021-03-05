@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.0.4](https://github.com/nodys/spreadstream/compare/v4.0.3...v4.0.4) (2021-03-05)
+
+
+### Bug Fixes
+
+* bump dependencies ([b5cf64d](https://github.com/nodys/spreadstream/commit/b5cf64d618c37fe73e0c2fd7f0c10a2151247f21))
+
 ### [4.0.3](https://github.com/nodys/spreadstream/compare/v4.0.2...v4.0.3) (2020-06-05)
 
 
