@@ -40,7 +40,7 @@
     "fs-extra": "^7.0.0",
     "google-auth-library": "^7.0.2",
     "googleapis": "^67.1.1",
-    "inquirer": "^6.0.0",
+    "inquirer": "^8.2.0",
     "lodash": "^4.17.15",
     "mississippi": "^2.0.0",
     "ndjson": "^1.5.0",
